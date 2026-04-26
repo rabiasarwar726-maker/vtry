@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users — VTRY{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header anim-fade-up">
+    <h1>All <span style="color:var(--accent)">Users</span> 👤</h1>
+    <p>Registered users and their activity overview</p>
+  </div>
+  <div class="card anim-fade-up">
+    <table>
+      <tr><th>#</th><th>Username</th><th>Email</th><th>Try-Ons</th><th>Joined</th></tr>
+      {% for u in users %}
+      <tr>
+        <td style="color:var(--text-muted)">{{ u.id }}</td>
+        <td><strong>{{ u.username }}</strong></td>
+        <td style="color:var(--text-muted)">{{ u.email }}</td>
+        <td><span class="badge badge-gold">{{ u.tryons }}</span></td>
+        <td style="color:var(--text-muted)">{{ u.created_at[:10] }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:3rem">No users registered yet</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — VTRY{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header anim-fade-up">
+    <h1>Welcome back, <span style="color:var(--accent)">{{ session.username }}</span> 👋</h1>
+    <p>Your personal virtual try-on studio</p>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="grid-3" style="margin-bottom:2.5rem">
+    <a href="{{ url_for('tryon') }}" class="card card-glow anim-fade-up" style="display:flex;align-items:center;gap:1.3rem;text-decoration:none;border-color:rgba(200,169,110,0.2);background:linear-gradient(135deg,rgba(200,169,110,0.07),rgba(200,169,110,0.02));cursor:pointer">
+      <div style="width:56px;height:56px;border-radius:16px;background:rgba(200,169,110,0.15);border:1px solid rgba(200,169,110,0.2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;transition:transform 0.3s" onmouseover="this.style.transform='rotate(-8deg) scale(1.1)'" onmouseout="this.style.transform=''">🪄</div>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:1rem;margin-bottom:0.2rem">New Try-On</div>
+        <div style="color:var(--text-muted);font-size:0.83rem">Generate a new look</div>
+      </div>
+    </a>
+    <a href="{{ url_for('catalog') }}" class="card anim-fade-up-2" style="display:flex;align-items:center;gap:1.3rem;text-decoration:none;border-color:rgba(232,196,255,0.15);background:linear-gradient(135deg,rgba(232,196,255,0.06),rgba(232,196,255,0.02));cursor:pointer">
+      <div style="width:56px;height:56px;border-radius:16px;background:rgba(232,196,255,0.12);border:1px solid rgba(232,196,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;transition:transform 0.3s" onmouseover="this.style.transform='rotate(-8deg) scale(1.1)'" onmouseout="this.style.transform=''">👗</div>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:1rem;margin-bottom:0.2rem">Browse Catalog</div>
+        <div style="color:var(--text-muted);font-size:0.83rem">Explore garments</div>
+      </div>
+    </a>
+    <a href="{{ url_for('my_results') }}" class="card anim-fade-up-3" style="display:flex;align-items:center;gap:1.3rem;text-decoration:none;border-color:rgba(122,248,202,0.15);background:linear-gradient(135deg,rgba(122,248,202,0.06),rgba(122,248,202,0.02));cursor:pointer">
+      <div style="width:56px;height:56px;border-radius:16px;background:rgba(122,248,202,0.1);border:1px solid rgba(122,248,202,0.2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;transition:transform 0.3s" onmouseover="this.style.transform='rotate(-8deg) scale(1.1)'" onmouseout="this.style.transform=''">📸</div>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:1rem;margin-bottom:0.2rem">My Results</div>
+        <div style="color:var(--text-muted);font-size:0.83rem">View saved looks</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Recent Try-Ons -->
+  <div class="card anim-fade-up-4">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem">
+      <div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700">Recent Try-Ons</h2>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.2rem">Your latest generated looks</p>
+      </div>
+      <a href="{{ url_for('my_results') }}" class="btn btn-ghost btn-sm">View All →</a>
+    </div>
+    {% if results %}
+    <div class="grid-3">
+      {% for r in results %}
+      <div class="result-card">
+        <img src="/static/results/{{ r.result_image }}" alt="Try-On Result" onerror="this.parentElement.style.display='none'">
+        <div class="r-meta">
+          <strong>{{ r.garment_name }}</strong>
+          <span>{{ r.color }} · {{ r.created_at[:10] }}</span>
+          <div style="margin-top:0.6rem">
+            <a href="/static/results/{{ r.result_image }}" download class="btn btn-primary btn-sm">⬇ Save</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+      <span class="e-icon">🪄</span>
+      <h3>No try-ons yet</h3>
+      <p>Upload your photo and select a garment to get started!</p>
+      <a href="{{ url_for('tryon') }}" class="btn btn-primary">Start Try-On →</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

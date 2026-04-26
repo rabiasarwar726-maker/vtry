@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}My Results — VTRY{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header anim-fade-up">
+    <h1>My Try-On <span style="color:var(--accent)">Results</span> 📸</h1>
+    <p>All your saved virtual try-on looks in one place</p>
+  </div>
+  {% if results %}
+  <div class="grid-3">
+    {% for r in results %}
+    <div class="result-card">
+      <img src="/static/results/{{ r.result_image }}" alt="Result" onerror="this.style.display='none'">
+      <div class="r-meta">
+        <strong>{{ r.garment_name }}</strong>
+        <span>{{ r.color }} · {{ r.created_at[:10] }}</span>
+        <div style="margin-top:0.7rem;display:flex;gap:0.5rem">
+          <a href="/static/results/{{ r.result_image }}" download class="btn btn-primary btn-sm">⬇ Save</a>
+          <a href="{{ url_for('tryon') }}" class="btn btn-ghost btn-sm">Try Again</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <span class="e-icon">📸</span>
+    <h3>No results yet</h3>
+    <p>Generate your first virtual try-on to see results here!</p>
+    <a href="{{ url_for('tryon') }}" class="btn btn-primary">Start Try-On →</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

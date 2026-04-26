@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Register — VTRY{% endblock %}
+{% block content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(232,196,255,0.05) 0%,transparent 70%)">
+  <div style="width:100%;max-width:440px" class="anim-scale">
+    <div style="text-align:center;margin-bottom:2.5rem">
+      <a href="/" style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--accent);text-decoration:none;display:block;margin-bottom:0.3rem">✦ VTRY</a>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:0.4rem">Create Account</h2>
+      <p style="color:var(--text-muted);font-size:0.9rem">Start your virtual try-on journey today</p>
+    </div>
+    <div class="card card-glow" style="border-color:rgba(232,196,255,0.12)">
+      <form method="POST">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="Choose a username" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" name="email" placeholder="your@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Create a strong password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.85rem;font-size:0.95rem;margin-top:0.5rem">Create Account →</button>
+      </form>
+      <div class="divider"></div>
+      <p style="text-align:center;font-size:0.88rem;color:var(--text-muted)">Already have an account? <a href="/login" style="color:var(--accent);font-weight:600">Sign In</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Manage Garments — VTRY{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header anim-fade-up">
+    <h1>Manage <span style="color:var(--accent)">Garments</span> 👗</h1>
+    <p>Add, view, and remove garments from the catalog</p>
+  </div>
+  <div class="layout-split">
+    <div class="card card-glow anim-fade-up" style="border-color:rgba(200,169,110,0.15)">
+      <h3 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:1.3rem">➕ Add New Garment</h3>
+      <form method="POST" enctype="multipart/form-data">
+        <div class="form-group"><label>Garment Name</label><input type="text" name="name" placeholder="e.g. Blue Denim Jacket" required></div>
+        <div class="form-row">
+          <div class="form-group"><label>Type</label><select name="type"><option value="top">Top</option><option value="jacket">Jacket</option><option value="shirt">Shirt</option><option value="hoodie">Hoodie</option></select></div>
+          <div class="form-group"><label>Size</label><select name="size"><option>XS</option><option>S</option><option selected>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
+        </div>
+        <div class="form-group"><label>Color</label><input type="text" name="color" placeholder="e.g. Navy Blue"></div>
+        <div class="form-group">
+          <label>Garment Image (PNG transparent preferred)</label>
+          <div class="upload-zone" style="padding:1.5rem">
+            <input type="file" name="image" accept="image/*" required>
+            <span class="u-icon" style="font-size:1.8rem">📁</span>
+            <p style="font-size:0.85rem">Click to select garment image</p>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Add to Catalog</button>
+      </form>
+    </div>
+    <div class="card anim-fade-up-2">
+      <h3 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:1.3rem">All Garments <span class="badge badge-gold">{{ garments|length }}</span></h3>
+      {% if garments %}
+      <div style="display:flex;flex-direction:column;gap:0.8rem;max-height:600px;overflow-y:auto">
+        {% for g in garments %}
+        <div style="display:flex;align-items:center;gap:1rem;padding:0.9rem;background:var(--surface2);border-radius:12px;border:1px solid var(--border);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--border-bright)'" onmouseout="this.style.borderColor='var(--border)'">
+          <img src="/static/garments/{{ g.image_path }}" style="width:54px;height:54px;object-fit:contain;border-radius:8px;background:var(--bg)" onerror="this.style.display='none'">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.name }}</div>
+            <div style="font-size:0.78rem;color:var(--text-muted)">{{ g.color }} · {{ g.size }} · {{ g.type }}</div>
+          </div>
+          <a href="{{ url_for('delete_garment', gid=g.id) }}" onclick="return confirm('Delete {{ g.name }}?')" class="btn btn-danger btn-sm">🗑</a>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty" style="padding:2rem"><span class="e-icon" style="font-size:2rem">👗</span><p>No garments yet. Add one!</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

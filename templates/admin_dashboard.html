@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — VTRY{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header anim-fade-up">
+    <h1>Admin <span style="color:var(--accent)">Dashboard</span> 🛡</h1>
+    <p>System overview, analytics, and management</p>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:2rem">
+    <div class="stat-card anim-fade-up">
+      <div class="stat-num" style="color:var(--accent)">{{ users_count }}</div>
+      <div class="stat-label">👤 Total Registered Users</div>
+    </div>
+    <div class="stat-card anim-fade-up-2">
+      <div class="stat-num" style="color:var(--accent2)">{{ garments_count }}</div>
+      <div class="stat-label">👗 Garments in Catalog</div>
+    </div>
+    <div class="stat-card anim-fade-up-3">
+      <div class="stat-num" style="color:var(--accent3)">{{ results_count }}</div>
+      <div class="stat-label">🪄 Try-Ons Generated</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card anim-fade-up">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+        <h3 style="font-family:'Playfair Display',serif;font-weight:700">Recent Users</h3>
+        <a href="{{ url_for('admin_users') }}" class="btn btn-ghost btn-sm">View All →</a>
+      </div>
+      <table>
+        <tr><th>Username</th><th>Email</th><th>Joined</th></tr>
+        {% for u in recent_users %}
+        <tr>
+          <td><strong>{{ u.username }}</strong></td>
+          <td style="color:var(--text-muted)">{{ u.email }}</td>
+          <td style="color:var(--text-muted)">{{ u.created_at[:10] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div class="card anim-fade-up-2">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+        <h3 style="font-family:'Playfair Display',serif;font-weight:700">Recent Try-Ons</h3>
+        <a href="{{ url_for('admin_garments') }}" class="btn btn-ghost btn-sm">Manage →</a>
+      </div>
+      <table>
+        <tr><th>User</th><th>Garment</th><th>Date</th></tr>
+        {% for r in recent_results %}
+        <tr>
+          <td><strong>{{ r.username }}</strong></td>
+          <td style="color:var(--text-muted)">{{ r.garment_name }}</td>
+          <td style="color:var(--text-muted)">{{ r.created_at[:10] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

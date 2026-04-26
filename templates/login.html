@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Sign In — VTRY{% endblock %}
+{% block content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(200,169,110,0.07) 0%,transparent 70%)">
+  <div style="width:100%;max-width:420px" class="anim-scale">
+    <div style="text-align:center;margin-bottom:2.5rem">
+      <a href="/" style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--accent);text-decoration:none;display:block;margin-bottom:0.3rem">✦ VTRY</a>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:0.4rem">Welcome back</h2>
+      <p style="color:var(--text-muted);font-size:0.9rem">Sign in to continue your try-on journey</p>
+    </div>
+    <div class="card card-glow" style="border-color:rgba(200,169,110,0.15)">
+      <form method="POST">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="Enter your username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.85rem;font-size:0.95rem;margin-top:0.5rem">Sign In →</button>
+      </form>
+      <div class="divider"></div>
+      <p style="text-align:center;font-size:0.88rem;color:var(--text-muted)">Don't have an account? <a href="/register" style="color:var(--accent);font-weight:600">Register free</a></p>
+    </div>
+    <p style="text-align:center;margin-top:1.5rem;font-size:0.82rem;color:var(--text-muted)">Admin? <a href="/admin/login" style="color:var(--text-soft)">Admin Panel →</a></p>
+  </div>
+</div>
+{% endblock %}
