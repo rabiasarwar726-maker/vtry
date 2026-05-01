@@ -81,22 +81,29 @@
           </div>
         </div>
 
-        <!-- Gemini AI Status Banner -->
-        <div class="card anim-fade-up-3" style="border-color:rgba(66,133,244,0.3);background:linear-gradient(135deg,rgba(66,133,244,0.08),rgba(52,168,83,0.05));margin-bottom:0">
-          <div style="display:flex;align-items:center;gap:0.8rem">
-            <div style="font-size:1.8rem">✨</div>
-            <div>
-              <div style="font-weight:700;font-size:0.9rem;color:#4285f4">Google Gemini AI Mode</div>
-              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem">Gemini <strong style="color:var(--text)">understands your body shape</strong> and wraps the garment realistically</div>
-            </div>
-          </div>
-          <div style="margin-top:0.8rem;padding:0.7rem 0.9rem;background:rgba(0,0,0,0.25);border-radius:10px;font-size:0.78rem;color:var(--text-muted);line-height:1.7">
-            <strong style="color:#fbbc04">⚡ To enable AI:</strong><br>
-            1. Go to <strong style="color:#4285f4">aistudio.google.com/apikey</strong><br>
-            2. Click <strong style="color:var(--text)">Create API Key</strong> (FREE)<br>
-            3. Paste it in <code style="color:var(--accent)">app.py</code> → <code style="color:#fbbc04">GEMINI_API_KEY = "your_key"</code>
-          </div>
-        </div>
+        <!-- FASHN AI Status -->
+{% if ai_enabled %}
+<div class="card anim-fade-up-3" style="border-color:rgba(0,200,83,0.3);background:linear-gradient(135deg,rgba(0,200,83,0.07),rgba(0,200,83,0.02));margin-bottom:0">
+  <div style="display:flex;align-items:center;gap:0.8rem">
+    <div style="font-size:1.8rem">✨</div>
+    <div>
+      <div style="font-weight:700;font-size:0.9rem;color:#00c853">FASHN AI Active</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem">AI will <strong style="color:var(--text)">wrap the garment</strong> realistically on your body</div>
+    </div>
+    <div style="margin-left:auto;background:rgba(0,200,83,0.15);border:1px solid rgba(0,200,83,0.3);color:#00c853;padding:0.25rem 0.65rem;border-radius:50px;font-size:0.72rem;font-weight:700;white-space:nowrap">● READY</div>
+  </div>
+</div>
+{% else %}
+<div class="card anim-fade-up-3" style="border-color:rgba(158,158,158,0.2);background:rgba(158,158,158,0.04);margin-bottom:0">
+  <div style="display:flex;align-items:center;gap:0.8rem">
+    <div style="font-size:1.8rem">🖼️</div>
+    <div>
+      <div style="font-weight:700;font-size:0.9rem;color:var(--text-muted)">Overlay Mode</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem">Set your FASHN API key in <code>app.py</code> for AI try-on</div>
+    </div>
+  </div>
+</div>
+{% endif %}
 
         <!-- Submit -->
         <div class="anim-fade-up-4">
@@ -119,9 +126,9 @@
 .cat-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);padding:0.35rem 0.85rem;border-radius:50px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif}
 .cat-tab:hover{border-color:var(--border-bright);color:var(--text)}
 .cat-tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
-#garmentGrid::-webkit-scrollbar{width:4px}
-#garmentGrid::-webkit-scrollbar-track{background:transparent}
-#garmentGrid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+#garmentGrid::-webkit-scrollbar{width:4px;}
+#garmentGrid::-webkit-scrollbar-track{background:transparent;}
+#garmentGrid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 </style>
 <script>
 const garmentData={};
