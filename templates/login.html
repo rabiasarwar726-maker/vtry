@@ -1,29 +1,203 @@
 {% extends 'base.html' %}
 {% block title %}Sign In — VTRY{% endblock %}
 {% block content %}
-<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(200,169,110,0.07) 0%,transparent 70%)">
-  <div style="width:100%;max-width:420px" class="anim-scale">
-    <div style="text-align:center;margin-bottom:2.5rem">
-      <a href="/" style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--accent);text-decoration:none;display:block;margin-bottom:0.3rem">✦ VTRY</a>
-      <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:0.4rem">Welcome back</h2>
-      <p style="color:var(--text-muted);font-size:0.9rem">Sign in to continue your try-on journey</p>
-    </div>
-    <div class="card card-glow" style="border-color:rgba(200,169,110,0.15)">
-      <form method="POST">
-        <div class="form-group">
-          <label>Username</label>
-          <input type="text" name="username" placeholder="Enter your username" required autocomplete="username">
+<div class="login-scene">
+  <!-- Floating 3D shapes -->
+  <div class="shape-orbit">
+    <div class="orb-shape s1"></div>
+    <div class="orb-shape s2"></div>
+    <div class="orb-shape s3"></div>
+    <div class="orb-shape s4"></div>
+    <div class="orb-shape s5"></div>
+  </div>
+
+  <div class="login-wrap">
+    <!-- Left: 3D visual panel -->
+    <div class="login-visual">
+      <div class="vis-inner">
+        <div class="vis-ring r1"></div>
+        <div class="vis-ring r2"></div>
+        <div class="vis-ring r3"></div>
+        <div class="vis-core">
+          <div class="vis-icon">✦</div>
+          <div class="vis-text">VTRY</div>
         </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password">
-        </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.85rem;font-size:0.95rem;margin-top:0.5rem">Sign In →</button>
-      </form>
-      <div class="divider"></div>
-      <p style="text-align:center;font-size:0.88rem;color:var(--text-muted)">Don't have an account? <a href="/register" style="color:var(--accent);font-weight:600">Register free</a></p>
+        <div class="vis-tag t1">AI Try-On</div>
+        <div class="vis-tag t2">Virtual Fit</div>
+        <div class="vis-tag t3">Smart Style</div>
+      </div>
+      <p class="vis-caption">Your personal virtual fitting room</p>
     </div>
-    <p style="text-align:center;margin-top:1.5rem;font-size:0.82rem;color:var(--text-muted)">Admin? <a href="/admin/login" style="color:var(--text-soft)">Admin Panel →</a></p>
+
+    <!-- Right: Login form -->
+    <div class="login-form-side">
+      <div class="login-card card-3d">
+        <div class="lc-top">
+          <a href="/" class="lc-logo">✦ VTRY</a>
+          <h2>Welcome back</h2>
+          <p>Sign in to continue your try-on journey</p>
+        </div>
+
+        <form method="POST" class="lc-form">
+          <div class="form-group">
+            <label>Username</label>
+            <div class="input-wrap">
+              <span class="input-icon">◎</span>
+              <input type="text" name="username" placeholder="Enter your username" required autocomplete="username">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">●●</span>
+              <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary lc-submit">
+            <span>Sign In</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </form>
+
+        <div class="divider"><span>or</span></div>
+
+        <p class="lc-foot">Don't have an account? <a href="/register">Register free</a></p>
+        <p class="lc-admin">Admin? <a href="/admin/login">Admin Panel →</a></p>
+      </div>
+    </div>
   </div>
 </div>
+
+<style>
+.login-scene{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:2rem;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse 80% 70% at 40% 50%,rgba(200,169,110,0.06) 0%,transparent 70%);
+}
+/* Orbiting shapes */
+.shape-orbit{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.orb-shape{position:absolute;border-radius:50%;border:1px solid rgba(200,169,110,0.12);animation:orbitShape 12s ease-in-out infinite alternate}
+.s1{width:300px;height:300px;top:-80px;right:10%;animation-delay:0s;background:radial-gradient(circle,rgba(200,169,110,0.04),transparent)}
+.s2{width:180px;height:180px;bottom:10%;left:5%;animation-delay:-3s;border-color:rgba(232,196,255,0.1)}
+.s3{width:80px;height:80px;top:30%;left:8%;animation-delay:-6s;border-color:rgba(122,248,202,0.12)}
+.s4{width:120px;height:120px;bottom:20%;right:8%;animation-delay:-9s;border-color:rgba(200,169,110,0.08)}
+.s5{width:50px;height:50px;top:60%;right:20%;animation-delay:-4s;background:rgba(200,169,110,0.06);border:none}
+@keyframes orbitShape{from{transform:translate(0,0) rotate(0deg)}to{transform:translate(20px,-20px) rotate(30deg)}}
+
+/* Wrap */
+.login-wrap{
+  display:grid;grid-template-columns:1fr 1fr;gap:4rem;
+  max-width:900px;width:100%;align-items:center;
+  position:relative;z-index:5;
+}
+
+/* Visual panel */
+.login-visual{text-align:center}
+.vis-inner{
+  position:relative;width:260px;height:260px;margin:0 auto 1.5rem;
+  perspective:600px;
+}
+.vis-ring{
+  position:absolute;border-radius:50%;border:1px solid rgba(200,169,110,0.2);
+  top:50%;left:50%;transform:translate(-50%,-50%) rotateX(70deg);
+  animation:ringRotate 8s linear infinite;
+}
+.r1{width:260px;height:260px;animation-duration:8s}
+.r2{width:190px;height:190px;border-color:rgba(232,196,255,0.15);animation-duration:12s;animation-direction:reverse}
+.r3{width:120px;height:120px;border-color:rgba(122,248,202,0.12);animation-duration:6s}
+@keyframes ringRotate{from{transform:translate(-50%,-50%) rotateX(70deg) rotateZ(0deg)}to{transform:translate(-50%,-50%) rotateX(70deg) rotateZ(360deg)}}
+
+.vis-core{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(200,169,110,0.15),rgba(232,196,255,0.1));
+  border:1px solid rgba(200,169,110,0.3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 0 40px rgba(200,169,110,0.15),inset 0 0 20px rgba(200,169,110,0.05);
+  animation:coreFloat 4s ease-in-out infinite;
+}
+@keyframes coreFloat{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.05) translateY(-4px)}}
+.vis-icon{font-size:2rem;color:var(--accent);line-height:1}
+.vis-text{font-family:'Playfair Display',serif;font-size:0.85rem;font-weight:900;color:var(--accent);letter-spacing:.1em}
+
+.vis-tag{
+  position:absolute;
+  background:rgba(10,11,18,0.9);border:1px solid rgba(200,169,110,0.2);
+  color:var(--accent);font-size:0.7rem;font-weight:600;
+  padding:0.3rem 0.75rem;border-radius:50px;
+  backdrop-filter:blur(10px);letter-spacing:.06em;
+  animation:tagFloat 5s ease-in-out infinite;
+}
+.t1{top:5%;left:-5%;animation-delay:0s}
+.t2{top:5%;right:-5%;animation-delay:-1.5s}
+.t3{bottom:12%;left:50%;transform:translateX(-50%);animation-delay:-3s}
+@keyframes tagFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.t3{animation-name:tagFloat3}
+@keyframes tagFloat3{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+
+.vis-caption{color:var(--text-muted);font-size:0.88rem;font-weight:300;line-height:1.6}
+
+/* Form card */
+.login-card{
+  background:rgba(10,11,18,0.85);
+  border:1px solid rgba(200,169,110,0.12);
+  border-radius:24px;padding:2.5rem 2rem;
+  backdrop-filter:blur(24px);
+  box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 1px rgba(255,255,255,0.05) inset;
+  position:relative;overflow:hidden;
+}
+.login-card::before{
+  content:'';position:absolute;top:0;left:10%;width:80%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,169,110,0.4),transparent);
+}
+.login-card::after{
+  content:'';position:absolute;inset:0;border-radius:24px;
+  background:radial-gradient(ellipse at 30% 0%,rgba(200,169,110,0.04),transparent 60%);
+  pointer-events:none;
+}
+
+.lc-logo{
+  font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;
+  color:var(--accent);text-decoration:none;display:block;margin-bottom:1.2rem;
+  text-shadow:0 0 20px rgba(200,169,110,0.3);
+}
+.lc-top h2{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;margin-bottom:0.3rem}
+.lc-top p{color:var(--text-muted);font-size:0.88rem;margin-bottom:1.8rem}
+
+/* Input wrap with icon */
+.input-wrap{position:relative}
+.input-icon{
+  position:absolute;left:1rem;top:50%;transform:translateY(-50%);
+  font-size:0.7rem;color:var(--text-muted);pointer-events:none;letter-spacing:-0.05em;
+}
+.input-wrap input{padding-left:2.5rem}
+
+.lc-form .form-group{margin-bottom:1.2rem}
+
+.lc-submit{
+  width:100%;justify-content:center;padding:0.9rem;
+  font-size:0.95rem;margin-top:0.5rem;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),#d4b87a,var(--accent));
+  background-size:200% auto;animation:gradMove 3s linear infinite;
+}
+@keyframes gradMove{from{background-position:0%}to{background-position:200%}}
+.lc-submit:hover{box-shadow:0 0 40px rgba(200,169,110,0.4)}
+.btn-arrow{transition:transform .3s}
+.lc-submit:hover .btn-arrow{transform:translateX(4px)}
+
+.divider{display:flex;align-items:center;gap:1rem;margin:1.2rem 0;color:var(--text-muted);font-size:0.78rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.lc-foot{text-align:center;font-size:0.86rem;color:var(--text-muted)}
+.lc-foot a{color:var(--accent);font-weight:600;text-decoration:none}
+.lc-foot a:hover{text-decoration:underline}
+.lc-admin{text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:0.6rem}
+.lc-admin a{color:var(--text-soft)}
+
+@media(max-width:700px){
+  .login-wrap{grid-template-columns:1fr}
+  .login-visual{display:none}
+  .login-card{padding:1.8rem 1.4rem}
+}
+</style>
 {% endblock %}

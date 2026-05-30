@@ -7,45 +7,149 @@
     <p>Add, view, and remove garments from the catalog</p>
   </div>
   <div class="layout-split">
-    <div class="card card-glow anim-fade-up" style="border-color:rgba(200,169,110,0.15)">
-      <h3 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:1.3rem">➕ Add New Garment</h3>
+
+    <!-- Add form -->
+    <div class="card card-glow card-3d anim-fade-up" style="border-color:rgba(200,169,110,.15)">
+      <h3 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:1.4rem;display:flex;align-items:center;gap:.6rem">
+        <span style="width:32px;height:32px;border-radius:8px;background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.2);display:flex;align-items:center;justify-content:center;font-size:.9rem">➕</span>
+        Add New Garment
+      </h3>
       <form method="POST" enctype="multipart/form-data">
-        <div class="form-group"><label>Garment Name</label><input type="text" name="name" placeholder="e.g. Blue Denim Jacket" required></div>
-        <div class="form-row">
-          <div class="form-group"><label>Type</label><select name="type"><option value="top">Top</option><option value="jacket">Jacket</option><option value="shirt">Shirt</option><option value="hoodie">Hoodie</option></select></div>
-          <div class="form-group"><label>Size</label><select name="size"><option>XS</option><option>S</option><option selected>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
+        <div class="form-group">
+          <label>Garment Name</label>
+          <input type="text" name="name" placeholder="e.g. Blue Denim Jacket" required>
         </div>
-        <div class="form-group"><label>Color</label><input type="text" name="color" placeholder="e.g. Navy Blue"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select name="type">
+              <option value="top">Top</option>
+              <option value="jacket">Jacket</option>
+              <option value="shirt">Shirt</option>
+              <option value="hoodie">Hoodie</option>
+              <option value="abaya">Abaya</option>
+              <option value="kameez">Kameez</option>
+              <option value="blouse">Blouse</option>
+              <option value="skirt">Skirt</option>
+              <option value="pants">Pants</option>
+              <option value="jeans">Jeans</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Size</label>
+            <select name="size">
+              <option>XS</option>
+              <option>S</option>
+              <option selected>M</option>
+              <option>L</option>
+              <option>XL</option>
+              <option>XXL</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <input type="text" name="color" placeholder="e.g. Navy Blue">
+        </div>
         <div class="form-group">
           <label>Garment Image (PNG transparent preferred)</label>
           <div class="upload-zone" style="padding:1.5rem">
             <input type="file" name="image" accept="image/*" required>
             <span class="u-icon" style="font-size:1.8rem">📁</span>
-            <p style="font-size:0.85rem">Click to select garment image</p>
+            <p style="font-size:.84rem"><strong>Click to select</strong> garment image</p>
           </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Add to Catalog</button>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;border-radius:14px;padding:.9rem">
+          Add to Catalog →
+        </button>
       </form>
     </div>
+
+    <!-- Garment list -->
     <div class="card anim-fade-up-2">
-      <h3 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:1.3rem">All Garments <span class="badge badge-gold">{{ garments|length }}</span></h3>
+      <h3 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:1.4rem;display:flex;align-items:center;gap:.7rem">
+        All Garments
+        <span class="badge badge-gold">{{ garments|length }}</span>
+      </h3>
+
       {% if garments %}
-      <div style="display:flex;flex-direction:column;gap:0.8rem;max-height:600px;overflow-y:auto">
+      <!-- Search filter -->
+      <div style="position:relative;margin-bottom:1rem">
+        <span style="position:absolute;left:.9rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.8rem">🔍</span>
+        <input type="text" id="garmentSearch" placeholder="Search garments…" oninput="filterGarments()"
+          style="width:100%;padding:.6rem 1rem .6rem 2.4rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:50px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;outline:none;transition:border .2s">
+      </div>
+
+      <div id="garmentList" style="display:flex;flex-direction:column;gap:.7rem;max-height:560px;overflow-y:auto;padding-right:.3rem">
         {% for g in garments %}
-        <div style="display:flex;align-items:center;gap:1rem;padding:0.9rem;background:var(--surface2);border-radius:12px;border:1px solid var(--border);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--border-bright)'" onmouseout="this.style.borderColor='var(--border)'">
-          <img src="/static/garments/{{ g.image_path }}" style="width:54px;height:54px;object-fit:contain;border-radius:8px;background:var(--bg)" onerror="this.style.display='none'">
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.name }}</div>
-            <div style="font-size:0.78rem;color:var(--text-muted)">{{ g.color }} · {{ g.size }} · {{ g.type }}</div>
+        <div class="g-list-row" data-name="{{ g.name|lower }}" data-color="{{ g.color|lower }}" data-type="{{ g.type|lower }}">
+          <div style="width:58px;height:58px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+            <img src="/static/garments/{{ g.image_path }}" style="width:54px;height:54px;object-fit:contain;transition:transform .3s" onerror="this.style.display='none'">
           </div>
-          <a href="{{ url_for('delete_garment', gid=g.id) }}" onclick="return confirm('Delete {{ g.name }}?')" class="btn btn-danger btn-sm">🗑</a>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.name }}</div>
+            <div style="display:flex;align-items:center;gap:.4rem;margin-top:.25rem;flex-wrap:wrap">
+              <span style="font-size:.74rem;color:var(--text-muted)">{{ g.color }}</span>
+              <span style="color:var(--border-bright)">·</span>
+              <span style="font-size:.74rem;color:var(--text-muted)">{{ g.size }}</span>
+              <span class="badge badge-gold" style="font-size:.66rem;padding:.1rem .45rem">{{ g.type }}</span>
+            </div>
+          </div>
+          <a href="{{ url_for('delete_garment', gid=g.id) }}"
+             onclick="return confirm('Delete \'{{ g.name }}\'? This cannot be undone.')"
+             class="btn btn-danger btn-sm" style="flex-shrink:0">🗑</a>
         </div>
         {% endfor %}
       </div>
+
+      <div id="noResults" style="display:none;text-align:center;padding:2rem;color:var(--text-muted);font-size:.88rem">
+        No garments match your search.
+      </div>
+
       {% else %}
-      <div class="empty" style="padding:2rem"><span class="e-icon" style="font-size:2rem">👗</span><p>No garments yet. Add one!</p></div>
+      <div class="empty" style="padding:2.5rem">
+        <span class="e-icon" style="font-size:2.5rem">👗</span>
+        <h3 style="font-size:1.1rem">No garments yet</h3>
+        <p>Add your first garment using the form.</p>
+      </div>
       {% endif %}
     </div>
+
   </div>
 </div>
+
+<style>
+.g-list-row {
+  display:flex;align-items:center;gap:.9rem;
+  padding:.8rem;
+  background:rgba(255,255,255,.02);
+  border-radius:12px;
+  border:1px solid var(--border);
+  transition:all .25s cubic-bezier(.16,1,.3,1);
+}
+.g-list-row:hover {
+  border-color:rgba(200,169,110,.3);
+  background:rgba(200,169,110,.04);
+  transform:translateX(4px);
+}
+.g-list-row:hover img { transform:scale(1.1); }
+
+#garmentList::-webkit-scrollbar { width:4px; }
+#garmentList::-webkit-scrollbar-track { background:transparent; }
+#garmentList::-webkit-scrollbar-thumb { background:rgba(200,169,110,.2);border-radius:2px; }
+</style>
+
+<script>
+function filterGarments() {
+  const q = document.getElementById('garmentSearch').value.toLowerCase();
+  const rows = document.querySelectorAll('.g-list-row');
+  let visible = 0;
+  rows.forEach(r => {
+    const match = r.dataset.name.includes(q) || r.dataset.color.includes(q) || r.dataset.type.includes(q);
+    r.style.display = match ? 'flex' : 'none';
+    if (match) visible++;
+  });
+  document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+}
+</script>
 {% endblock %}

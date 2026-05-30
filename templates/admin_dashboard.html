@@ -3,28 +3,34 @@
 {% block content %}
 <div class="container">
   <div class="page-header anim-fade-up">
-    <h1>Admin <span style="color:var(--accent)">Dashboard</span> 🛡</h1>
+    <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.15);color:#ff6b6b;padding:.3rem .9rem;border-radius:50px;font-size:.74rem;font-weight:700;letter-spacing:.07em;margin-bottom:.9rem">🛡 ADMIN PANEL</div>
+    <h1>Admin <span style="color:var(--accent)">Dashboard</span></h1>
     <p>System overview, analytics, and management</p>
   </div>
 
+  <!-- Stat cards -->
   <div class="grid-3" style="margin-bottom:2rem">
     <div class="stat-card anim-fade-up">
+      <div style="position:absolute;top:1rem;right:1rem;width:40px;height:40px;border-radius:10px;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem">👤</div>
       <div class="stat-num" style="color:var(--accent)">{{ users_count }}</div>
-      <div class="stat-label">👤 Total Registered Users</div>
+      <div class="stat-label">Total Registered Users</div>
     </div>
     <div class="stat-card anim-fade-up-2">
+      <div style="position:absolute;top:1rem;right:1rem;width:40px;height:40px;border-radius:10px;background:rgba(232,196,255,.1);border:1px solid rgba(232,196,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem">👗</div>
       <div class="stat-num" style="color:var(--accent2)">{{ garments_count }}</div>
-      <div class="stat-label">👗 Garments in Catalog</div>
+      <div class="stat-label">Garments in Catalog</div>
     </div>
     <div class="stat-card anim-fade-up-3">
+      <div style="position:absolute;top:1rem;right:1rem;width:40px;height:40px;border-radius:10px;background:rgba(122,248,202,.1);border:1px solid rgba(122,248,202,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem">🪄</div>
       <div class="stat-num" style="color:var(--accent3)">{{ results_count }}</div>
-      <div class="stat-label">🪄 Try-Ons Generated</div>
+      <div class="stat-label">Try-Ons Generated</div>
     </div>
   </div>
 
   <div class="grid-2">
-    <div class="card anim-fade-up">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+    <!-- Recent users -->
+    <div class="card card-glow anim-fade-up">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.3rem">
         <h3 style="font-family:'Playfair Display',serif;font-weight:700">Recent Users</h3>
         <a href="{{ url_for('admin_users') }}" class="btn btn-ghost btn-sm">View All →</a>
       </div>
@@ -32,15 +38,17 @@
         <tr><th>Username</th><th>Email</th><th>Joined</th></tr>
         {% for u in recent_users %}
         <tr>
-          <td><strong>{{ u.username }}</strong></td>
-          <td style="color:var(--text-muted)">{{ u.email }}</td>
-          <td style="color:var(--text-muted)">{{ u.created_at[:10] }}</td>
+          <td><div style="display:flex;align-items:center;gap:.6rem"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#000;flex-shrink:0">{{ u.username[0].upper() }}</div><strong>{{ u.username }}</strong></div></td>
+          <td style="color:var(--text-muted);font-size:.84rem">{{ u.email }}</td>
+          <td style="color:var(--text-muted);font-size:.82rem">{{ u.created_at[:10] }}</td>
         </tr>
         {% endfor %}
       </table>
     </div>
-    <div class="card anim-fade-up-2">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+
+    <!-- Recent try-ons -->
+    <div class="card card-glow anim-fade-up-2">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.3rem">
         <h3 style="font-family:'Playfair Display',serif;font-weight:700">Recent Try-Ons</h3>
         <a href="{{ url_for('admin_garments') }}" class="btn btn-ghost btn-sm">Manage →</a>
       </div>
@@ -49,8 +57,8 @@
         {% for r in recent_results %}
         <tr>
           <td><strong>{{ r.username }}</strong></td>
-          <td style="color:var(--text-muted)">{{ r.garment_name }}</td>
-          <td style="color:var(--text-muted)">{{ r.created_at[:10] }}</td>
+          <td style="color:var(--text-muted);font-size:.84rem">{{ r.garment_name }}</td>
+          <td style="color:var(--text-muted);font-size:.82rem">{{ r.created_at[:10] }}</td>
         </tr>
         {% endfor %}
       </table>

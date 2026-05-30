@@ -6,9 +6,13 @@ from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 from functools import wraps
 from datetime import datetime
 import numpy as np
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'vtry-secret-key-2024'
+
+
 
 BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER  = os.path.join(BASE_DIR, 'static', 'uploads')
@@ -33,9 +37,9 @@ PLACEMENT = {
     'shirt':   {'w':0.62, 'h':0.38, 'y':0.12, 'zone':'upper'},
     'blouse':  {'w':0.62, 'h':0.36, 'y':0.12, 'zone':'upper'},
     'jacket':  {'w':0.68, 'h':0.42, 'y':0.11, 'zone':'upper'},
-    'hoodie':  {'w':0.66, 'h':0.40, 'y':0.11, 'zone':'upper'},
+    'hoodie':  {'w':0.66, 'h':0.42, 'y':0.11, 'zone':'upper'},
     'kameez':  {'w':0.65, 'h':0.58, 'y':0.10, 'zone':'upper'},
-    'abaya':   {'w':0.74, 'h':0.84, 'y':0.07, 'zone':'full'},
+    'frock':   {'w':0.72, 'h':0.82, 'y':0.08, 'zone':'full'},
     'suit':    {'w':0.72, 'h':0.72, 'y':0.07, 'zone':'full'},
     'pants':   {'w':0.58, 'h':0.52, 'y':0.46, 'zone':'lower'},
     'jeans':   {'w':0.58, 'h':0.52, 'y':0.46, 'zone':'lower'},
@@ -52,7 +56,7 @@ FASHN_CATEGORY = {
     'jacket':  'tops',
     'hoodie':  'tops',
     'kameez':  'tops',
-    'abaya':   'one-pieces',
+    'frock':   'one-pieces',
     'suit':    'one-pieces',
     'pants':   'bottoms',
     'jeans':   'bottoms',
@@ -297,62 +301,488 @@ def apply_tryon(u_path, g_path, r_path, gtype='default'):
         raise ValueError(f"Cannot process images: {e}")
 
 # ═══════════════════════════════════════════════════════════════════
-# FIT ANALYZER
+# PROFESSIONAL FIT ADVISOR — Claude AI Vision + Smart Pixel Fallback
 # ═══════════════════════════════════════════════════════════════════
 
-def analyze_fit(user_img_path, garment_img_path, gtype, garment_size):
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
+
+# International standard size chart (chest/bust in inches)
+SIZE_MEASUREMENTS = {
+    'XS':  {'chest': (30, 32), 'waist': (24, 26), 'hips': (34, 36), 'label': 'Extra Small'},
+    'S':   {'chest': (33, 35), 'waist': (27, 29), 'hips': (37, 39), 'label': 'Small'},
+    'M':   {'chest': (36, 38), 'waist': (30, 32), 'hips': (40, 42), 'label': 'Medium'},
+    'L':   {'chest': (39, 41), 'waist': (33, 35), 'hips': (43, 45), 'label': 'Large'},
+    'XL':  {'chest': (42, 44), 'waist': (36, 38), 'hips': (46, 48), 'label': 'Extra Large'},
+    'XXL': {'chest': (45, 47), 'waist': (39, 41), 'hips': (49, 51), 'label': '2X Large'},
+}
+
+SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
+# Garment-type specific fit guidance
+GARMENT_FIT_GUIDE = {
+    'hoodie':  {'preferred': 'relaxed', 'tight_warn': 'restricts arm movement', 'loose_ok': True,  'key_area': 'shoulders and chest'},
+    'shirt':   {'preferred': 'tailored', 'tight_warn': 'pulls at buttons',      'loose_ok': False, 'key_area': 'collar, chest, and shoulders'},
+    'blouse':  {'preferred': 'relaxed',  'tight_warn': 'strains at the bust',   'loose_ok': True,  'key_area': 'bust and shoulders'},
+    'jacket':  {'preferred': 'tailored', 'tight_warn': 'restricts shoulder movement', 'loose_ok': False, 'key_area': 'shoulders — most critical'},
+    'kameez':  {'preferred': 'relaxed',  'tight_warn': 'too tight across chest', 'loose_ok': True, 'key_area': 'chest and hip allowance'},
+    'suit':    {'preferred': 'tailored', 'tight_warn': 'restricts movement',    'loose_ok': False, 'key_area': 'jacket shoulders and trouser waist'},
+    'frock':   {'preferred': 'relaxed',  'tight_warn': 'tight at hips/bust',    'loose_ok': True,  'key_area': 'bust, waist, and hip'},
+    'jeans':   {'preferred': 'fitted',   'tight_warn': 'uncomfortable at waist','loose_ok': False, 'key_area': 'waist and hips'},
+    'pants':   {'preferred': 'tailored', 'tight_warn': 'tight in thigh/waist',  'loose_ok': False, 'key_area': 'waist, seat, and thigh'},
+    'skirt':   {'preferred': 'relaxed',  'tight_warn': 'tight across the hips', 'loose_ok': True,  'key_area': 'waist and hip'},
+    'top':     {'preferred': 'relaxed',  'tight_warn': 'strains across bust',   'loose_ok': True,  'key_area': 'bust and shoulder'},
+    'default': {'preferred': 'regular',  'tight_warn': 'uncomfortable fit',     'loose_ok': True,  'key_area': 'overall silhouette'},
+}
+
+def get_size_suggestion(current_size, direction):
+    """Get next size up or down safely."""
+    s = str(current_size).upper().strip()
+    idx = SIZE_ORDER.index(s) if s in SIZE_ORDER else 2
+    if direction == 'up':
+        return SIZE_ORDER[min(idx + 1, len(SIZE_ORDER) - 1)]
+    return SIZE_ORDER[max(idx - 1, 0)]
+
+def get_all_size_options(current_size):
+    """Return nearby sizes for display."""
+    s = str(current_size).upper().strip()
+    idx = SIZE_ORDER.index(s) if s in SIZE_ORDER else 2
+    return {
+        'down2': SIZE_ORDER[max(idx - 2, 0)],
+        'down1': SIZE_ORDER[max(idx - 1, 0)],
+        'current': s,
+        'up1': SIZE_ORDER[min(idx + 1, 5)],
+        'up2': SIZE_ORDER[min(idx + 2, 5)],
+    }
+
+def encode_image_for_claude(img_path, max_size=1024):
+    """Encode image as base64 JPEG for Claude Vision API."""
+    img = Image.open(img_path).convert('RGB')
+    w, h = img.size
+    if max(w, h) > max_size:
+        ratio = max_size / max(w, h)
+        img = img.resize((int(w * ratio), int(h * ratio)), Image.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, format='JPEG', quality=92)
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode('utf-8')
+
+def measure_garment_dimensions(garment_img_path):
+    """
+    Estimate garment physical proportions from its image pixels.
+    Returns a dict with width_ratio, height_ratio, aspect, and a size_hint.
+    """
     try:
-        user = Image.open(user_img_path).convert('RGB')
-        uw, uh = user.size
+        img = Image.open(garment_img_path).convert('RGBA')
+        arr = np.array(img)
+        # Detect non-transparent / non-white pixels as garment pixels
+        if arr.shape[2] == 4:
+            alpha = arr[:, :, 3]
+            garment_mask = alpha > 30
+        else:
+            rgb = arr[:, :, :3].astype(np.float32)
+            brightness = rgb.mean(axis=2)
+            garment_mask = brightness < 240
+        rows = np.any(garment_mask, axis=1)
+        cols = np.any(garment_mask, axis=0)
+        if not rows.any():
+            return None
+        rmin, rmax = np.where(rows)[0][[0, -1]]
+        cmin, cmax = np.where(cols)[0][[0, -1]]
+        g_h = rmax - rmin
+        g_w = cmax - cmin
+        ih, iw = arr.shape[:2]
+        width_ratio  = g_w / iw if iw > 0 else 0.7
+        height_ratio = g_h / ih if ih > 0 else 0.8
+        aspect = g_w / g_h if g_h > 0 else 1.0
+        # Heuristic: wide garments tend to be larger cuts
+        if width_ratio > 0.85:
+            size_hint = 'oversized'
+        elif width_ratio > 0.70:
+            size_hint = 'regular'
+        else:
+            size_hint = 'slim'
+        return {
+            'width_ratio':  round(width_ratio, 3),
+            'height_ratio': round(height_ratio, 3),
+            'aspect':       round(aspect, 3),
+            'size_hint':    size_hint,
+            'px_width':     int(g_w),
+            'px_height':    int(g_h),
+        }
+    except Exception as e:
+        print(f"[Garment measure] {e}")
+        return None
+
+def measure_body_from_image(user_img_path, gtype):
+    """
+    Estimate body width ratios from the user photo using pixel analysis.
+    Returns shoulder_ratio, torso_ratio, hip_ratio, body_class.
+    """
+    try:
+        img = Image.open(user_img_path).convert('RGB')
+        arr = np.array(img)
+        uh, uw = arr.shape[:2]
+        # Background colour estimated from corners
+        corners = np.array([arr[0,0], arr[0,-1], arr[10,0], arr[10,-1]], dtype=np.float32)
+        bg = corners.mean(axis=0)
+
+        def body_width_at(y_frac, band=0.04):
+            y1 = int(uh * (y_frac - band))
+            y2 = int(uh * (y_frac + band))
+            y1, y2 = max(0, y1), min(uh, y2)
+            strip = arr[y1:y2, :, :].astype(np.float32)
+            col_bg_dist = np.sqrt(((strip - bg) ** 2).sum(axis=(0, 2)) / strip.shape[0])
+            body_cols = col_bg_dist > 20
+            # Measure the span (leftmost to rightmost body pixel)
+            indices = np.where(body_cols)[0]
+            if len(indices) < 5:
+                return 0.5
+            return (indices[-1] - indices[0]) / uw
+
+        shoulder_r = body_width_at(0.25)
+        chest_r    = body_width_at(0.32)
+        waist_r    = body_width_at(0.45)
+        hip_r      = body_width_at(0.58)
+
+        # Body classification
+        max_r = max(shoulder_r, chest_r, waist_r, hip_r)
+        if max_r < 0.30:
+            body_class = 'slim'
+        elif max_r < 0.42:
+            body_class = 'average'
+        elif max_r < 0.52:
+            body_class = 'athletic_or_curvy'
+        else:
+            body_class = 'plus'
+
         cfg  = PLACEMENT.get(gtype, PLACEMENT['default'])
         zone = cfg['zone']
         if zone == 'upper':
-            region = user.crop((int(uw*0.15), int(uh*0.12), int(uw*0.85), int(uh*0.52)))
+            key_r = max(shoulder_r, chest_r)
         elif zone == 'lower':
-            region = user.crop((int(uw*0.20), int(uh*0.46), int(uw*0.80), int(uh*0.95)))
+            key_r = max(waist_r, hip_r)
         else:
-            region = user.crop((int(uw*0.15), int(uh*0.10), int(uw*0.85), int(uh*0.90)))
-        arr = np.array(region)
-        rw  = region.size[0]
-        col_means = arr.mean(axis=0)
-        bg_color  = np.array([arr[0,0], arr[0,-1]]).mean(axis=0)
-        body_cols = [i for i in range(rw)
-                     if np.sqrt(np.sum((col_means[i] - bg_color)**2)) > 25]
-        body_w = len(body_cols) if body_cols else int(rw * 0.55)
-        bwr    = body_w / uw
-        gwr    = cfg['w']
-        sm = {'XS':0.88,'S':0.92,'M':1.00,'L':1.08,'XL':1.15,'XXL':1.22}
-        egr   = gwr * sm.get(str(garment_size).upper(), 1.00)
-        ratio = egr / bwr if bwr > 0 else 1.0
-        if ratio < 0.88:
-            return {'status':'too_tight','label':'🔴 Too Tight',
-                    'message':'This garment will be too tight. Consider a larger size.',
-                    'color':'#ff4444','body_width':round(bwr*100,1),
-                    'garment_width':round(egr*100,1),'ratio':round(ratio,2)}
+            key_r = max(shoulder_r, chest_r, waist_r, hip_r)
+
+        return {
+            'shoulder_ratio': round(shoulder_r, 3),
+            'chest_ratio':    round(chest_r, 3),
+            'waist_ratio':    round(waist_r, 3),
+            'hip_ratio':      round(hip_r, 3),
+            'key_ratio':      round(key_r, 3),
+            'body_class':     body_class,
+        }
+    except Exception as e:
+        print(f"[Body measure] {e}")
+        return None
+
+def analyze_fit_with_claude(user_img_path, garment_img_path, gtype, garment_size):
+    """
+    Professional size advisor using Claude Vision.
+    Analyses body proportions + garment cut and returns a detailed JSON recommendation.
+    """
+    if not ANTHROPIC_API_KEY:
+        return None
+    try:
+        user_b64    = encode_image_for_claude(user_img_path, max_size=1024)
+        garment_b64 = encode_image_for_claude(garment_img_path, max_size=640)
+
+        gs          = str(garment_size).upper().strip()
+        size_info   = SIZE_MEASUREMENTS.get(gs, SIZE_MEASUREMENTS['M'])
+        size_up     = get_size_suggestion(gs, 'up')
+        size_down   = get_size_suggestion(gs, 'down')
+        fit_guide   = GARMENT_FIT_GUIDE.get(gtype, GARMENT_FIT_GUIDE['default'])
+        gdims       = measure_garment_dimensions(garment_img_path)
+        gdim_note   = f"Garment image analysis: cut appears {gdims['size_hint']} (width ratio {gdims['width_ratio']:.0%} of frame)" if gdims else "Garment dimensions: unavailable"
+
+        prompt = f"""You are a senior professional fashion stylist and fit consultant for VTRY, a premium virtual try-on platform.
+
+You will receive TWO images:
+  IMAGE 1 — the CLIENT's full-body or half-body photo
+  IMAGE 2 — the GARMENT product photo
+
+Your job: analyse the client's body and the garment, then deliver a precise, professional size recommendation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GARMENT INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type            : {gtype}
+Tagged size     : {gs}  ({size_info['label']})
+Standard chest  : {size_info['chest'][0]}–{size_info['chest'][1]} inches
+Standard waist  : {size_info['waist'][0]}–{size_info['waist'][1]} inches
+Standard hips   : {size_info['hips'][0]}–{size_info['hips'][1]} inches
+Preferred fit   : {fit_guide['preferred']}
+Key fit area    : {fit_guide['key_area']}
+If too tight    : {fit_guide['tight_warn']}
+Loose is OK?    : {'Yes — this style works oversized' if fit_guide['loose_ok'] else 'No — should be tailored'}
+{gdim_note}
+Available sizes : {', '.join(SIZE_ORDER)}
+Next size up    : {size_up}
+Next size down  : {size_down}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ANALYSIS INSTRUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step 1 — CLIENT BODY ANALYSIS
+  • Estimate body frame: skinny / slim / average / athletic / curvy / plus-size / heavy
+  • Note visible proportions: shoulder width, chest/bust, waist definition, hips
+  • Judge overall silhouette — is the person lean, medium-built, or broad?
+
+Step 2 — GARMENT CUT ANALYSIS
+  • Look at the garment in image 2: is it cut slim, regular, or oversized?
+  • Does the garment appear large/small relative to a standard {gs}?
+  • Is the garment structured (like a blazer) or relaxed (like a hoodie)?
+
+Step 3 — FIT ASSESSMENT
+  • Compare the client's estimated measurements against size {gs}
+  • For a SKINNY or very slim person wearing a large-cut garment: flag as too_loose and recommend sizing down
+  • For a PLUS or broad client wearing a slim-cut garment tagged {gs}: flag as too_tight and recommend sizing up
+  • For AVERAGE build with standard cut: assess whether {gs} is correct, too big, or too small
+  • Always factor in garment type — hoodies and blouses allow more ease; shirts, jeans, and suits should be close-fitted
+
+Step 4 — RECOMMENDATION
+  • Give one primary recommended size
+  • Give one alternative size
+  • Be specific in your message — mention the body area driving the recommendation
+  • If the garment looks oversized/wide even at {gs}, account for that
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORMAT — respond ONLY with this exact JSON, no extra text, no markdown fences:
+{{
+  "body_type": "slim",
+  "build_description": "Slender frame with narrow shoulders and lean torso",
+  "garment_cut": "oversized",
+  "current_size_assessment": "too_loose",
+  "recommended_size": "{size_down}",
+  "alternative_size": "{gs}",
+  "fit_label": "⚪ Too Loose — Size Down",
+  "fit_color": "#9e9e9e",
+  "fit_score": 30,
+  "message": "The garment is cut wide and your slim frame will be lost in size {gs}. We recommend {size_down} for a cleaner silhouette.",
+  "detailed_advice": "Focus on the shoulder seam — it should sit at the edge of your shoulder, not drooping. Size {size_down} will give you a much better drape across the chest without looking baggy.",
+  "styling_tip": "If you prefer an oversized streetwear look, {gs} works — but for a polished appearance, go {size_down}.",
+  "body_measurements_est": "Chest ~32 in, Waist ~26 in, Hips ~35 in",
+  "confidence": "high"
+}}
+
+current_size_assessment options (pick ONE):
+  "perfect"        → 🟢 Perfect Fit
+  "slightly_tight" → 🟠 Slightly Tight — Size Up
+  "too_tight"      → 🔴 Too Tight — Size Up
+  "slightly_loose" → 🔵 Slightly Loose — Size Down
+  "too_loose"      → ⚪ Too Loose — Size Down
+
+fit_score: integer 0–100  (95–100 = perfect, 60–80 = acceptable, <50 = wrong size)
+garment_cut options: "slim", "regular", "oversized", "relaxed", "structured"
+confidence options: "high", "medium", "low"
+"""
+
+        payload = {
+            "model": "claude-opus-4-5",
+            "max_tokens": 900,
+            "messages": [{
+                "role": "user",
+                "content": [
+                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": user_b64}},
+                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": garment_b64}},
+                    {"type": "text", "text": prompt}
+                ]
+            }]
+        }
+
+        resp = requests.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            },
+            json=payload,
+            timeout=45
+        )
+
+        if resp.status_code != 200:
+            print(f"[Claude Fit] API error {resp.status_code}: {resp.text[:300]}")
+            return None
+
+        data = resp.json()
+        raw  = data['content'][0]['text'].strip()
+        raw  = raw.replace('```json', '').replace('```', '').strip()
+        result = json.loads(raw)
+
+        # Map assessment → display values
+        ASSESS_MAP = {
+            'perfect':        ('🟢 Perfect Fit',            '#00c853'),
+            'slightly_tight': ('🟠 Slightly Tight — Size Up','#ff8c00'),
+            'too_tight':      ('🔴 Too Tight — Size Up',     '#ff4444'),
+            'slightly_loose': ('🔵 Slightly Loose — Size Down','#2196f3'),
+            'too_loose':      ('⚪ Too Loose — Size Down',   '#9e9e9e'),
+        }
+        assessment = result.get('current_size_assessment', 'perfect')
+        default_label, default_color = ASSESS_MAP.get(assessment, ('🟢 Perfect Fit', '#00c853'))
+
+        gs_norm = str(garment_size).upper().strip()
+        return {
+            'status':               assessment,
+            'label':                result.get('fit_label', default_label),
+            'message':              result.get('message', ''),
+            'color':                result.get('fit_color', default_color),
+            'body_type':            result.get('body_type', 'unknown'),
+            'build_description':    result.get('build_description', ''),
+            'garment_cut':          result.get('garment_cut', 'regular'),
+            'recommended_size':     result.get('recommended_size', gs_norm),
+            'alternative_size':     result.get('alternative_size', gs_norm),
+            'current_size':         gs_norm,
+            'detailed_advice':      result.get('detailed_advice', ''),
+            'styling_tip':          result.get('styling_tip', ''),
+            'body_measurements_est':result.get('body_measurements_est', ''),
+            'confidence':           result.get('confidence', 'medium'),
+            'fit_score':            int(result.get('fit_score', 75)),
+            'ai_fit_analysis':      True,
+            'size_up':              get_size_suggestion(gs_norm, 'up'),
+            'size_down':            get_size_suggestion(gs_norm, 'down'),
+            'all_sizes':            get_all_size_options(gs_norm),
+        }
+
+    except Exception as e:
+        print(f"[Claude Fit] Exception: {e}")
+        return None
+
+
+def analyze_fit_pixel(user_img_path, garment_img_path, gtype, garment_size):
+    """
+    Smart pixel-based fallback fit analysis.
+    Measures body width and garment dimensions from raw pixels.
+    """
+    gs       = str(garment_size).upper().strip()
+    size_up  = get_size_suggestion(gs, 'up')
+    size_down= get_size_suggestion(gs, 'down')
+
+    base = {
+        'current_size':  gs,
+        'size_up':       size_up,
+        'size_down':     size_down,
+        'all_sizes':     get_all_size_options(gs),
+        'ai_fit_analysis': False,
+        'confidence':    'medium',
+        'styling_tip':   '',
+        'body_measurements_est': '',
+        'garment_cut':   'regular',
+        'build_description': '',
+    }
+
+    try:
+        body   = measure_body_from_image(user_img_path, gtype)
+        gdims  = measure_garment_dimensions(garment_img_path)
+        cfg    = PLACEMENT.get(gtype, PLACEMENT['default'])
+
+        body_r = body['key_ratio'] if body else 0.50
+        body_class = body['body_class'] if body else 'average'
+
+        # Expected garment width ratio for this size (empirical scale)
+        sm = {'XS': 0.86, 'S': 0.91, 'M': 1.00, 'L': 1.08, 'XL': 1.16, 'XXL': 1.24}
+        base_gwr = cfg['w']
+        egr  = base_gwr * sm.get(gs, 1.00)
+
+        # Factor in garment's actual cut from pixel measurement
+        if gdims:
+            if gdims['size_hint'] == 'oversized':
+                egr *= 1.12
+            elif gdims['size_hint'] == 'slim':
+                egr *= 0.90
+            base['garment_cut'] = gdims['size_hint']
+
+        ratio = egr / body_r if body_r > 0 else 1.0
+
+        # Body class nudges
+        if body_class == 'slim' and ratio > 1.20:
+            ratio *= 1.08   # slim person → garment will look even bigger
+        elif body_class == 'plus' and ratio < 1.05:
+            ratio *= 0.88   # plus person → garment will feel tighter
+
+        base['body_type']  = body_class
+        base['body_ratio'] = round(body_r, 3)
+        base['garment_ratio'] = round(egr, 3)
+        base['ratio']      = round(ratio, 3)
+
+        fit_guide = GARMENT_FIT_GUIDE.get(gtype, GARMENT_FIT_GUIDE['default'])
+
+        if ratio < 0.87:
+            return {**base, 'status': 'too_tight',
+                    'label': '🔴 Too Tight — Size Up',
+                    'fit_score': 15,
+                    'color': '#ff4444',
+                    'recommended_size': size_up,
+                    'alternative_size': gs,
+                    'message': f'This {gtype} will be too tight — it will {fit_guide["tight_warn"]}. Size {size_up} is strongly recommended.',
+                    'detailed_advice': f'The {fit_guide["key_area"]} area is the most critical for this garment. Size {size_up} will give you the right ease of movement and a better silhouette.'}
         elif ratio < 0.95:
-            return {'status':'slightly_tight','label':'🟠 Slightly Tight',
-                    'message':'May feel a little snug. Try one size up.',
-                    'color':'#ff8c00','body_width':round(bwr*100,1),
-                    'garment_width':round(egr*100,1),'ratio':round(ratio,2)}
-        elif ratio <= 1.12:
-            return {'status':'perfect','label':'🟢 Perfect Fit',
-                    'message':'Great choice! This garment should fit you perfectly.',
-                    'color':'#00c853','body_width':round(bwr*100,1),
-                    'garment_width':round(egr*100,1),'ratio':round(ratio,2)}
-        elif ratio <= 1.22:
-            return {'status':'slightly_loose','label':'🔵 Slightly Loose',
-                    'message':'Will be a little relaxed. Could try one size down.',
-                    'color':'#2196f3','body_width':round(bwr*100,1),
-                    'garment_width':round(egr*100,1),'ratio':round(ratio,2)}
+            return {**base, 'status': 'slightly_tight',
+                    'label': '🟠 Slightly Tight — Consider Sizing Up',
+                    'fit_score': 52,
+                    'color': '#ff8c00',
+                    'recommended_size': size_up,
+                    'alternative_size': gs,
+                    'message': f'Size {gs} may feel snug, especially around the {fit_guide["key_area"]}. Try {size_up} for a more comfortable fit.',
+                    'detailed_advice': f'If you prefer a close, tailored look and the fabric has stretch, {gs} can work. Otherwise {size_up} will be more comfortable.'}
+        elif ratio <= 1.13:
+            return {**base, 'status': 'perfect',
+                    'label': '🟢 Perfect Fit',
+                    'fit_score': 94,
+                    'color': '#00c853',
+                    'recommended_size': gs,
+                    'alternative_size': gs,
+                    'message': f'Size {gs} is an excellent match for your body proportions and this {gtype}.',
+                    'detailed_advice': f'The {fit_guide["key_area"]} measurements align well. You should have good freedom of movement with a clean silhouette.'}
+        elif ratio <= 1.25:
+            return {**base, 'status': 'slightly_loose',
+                    'label': '🔵 Slightly Loose — Consider Sizing Down',
+                    'fit_score': 58,
+                    'color': '#2196f3',
+                    'recommended_size': size_down if not fit_guide['loose_ok'] else gs,
+                    'alternative_size': gs,
+                    'message': f'Size {gs} will be a bit relaxed on your frame.' + (f' Try {size_down} for a more fitted look.' if not fit_guide['loose_ok'] else ' This works great for a casual, relaxed style.'),
+                    'detailed_advice': ('This garment type is designed to be worn relaxed, so the extra room is intentional.'
+                                        if fit_guide['loose_ok']
+                                        else f'Size {size_down} will give a cleaner, more polished silhouette around the {fit_guide["key_area"]}.')}
         else:
-            return {'status':'too_loose','label':'⚪ Too Loose',
-                    'message':'Will be very loose. Consider a smaller size.',
-                    'color':'#9e9e9e','body_width':round(bwr*100,1),
-                    'garment_width':round(egr*100,1),'ratio':round(ratio,2)}
-    except:
-        return {'status':'unknown','label':'⚪ Fit Unknown',
-                'message':'Could not analyze fit.','color':'#9e9e9e',
-                'body_width':0,'garment_width':0,'ratio':1.0}
+            return {**base, 'status': 'too_loose',
+                    'label': '⚪ Too Loose — Size Down',
+                    'fit_score': 20,
+                    'color': '#9e9e9e',
+                    'recommended_size': size_down,
+                    'alternative_size': gs,
+                    'message': f'Size {gs} will be very baggy on you. Size {size_down} is recommended for a much better look.',
+                    'detailed_advice': f'The garment will likely droop at the {fit_guide["key_area"]} area. Sizing down to {size_down} will give structure and shape to the outfit.'}
+
+    except Exception as e:
+        print(f"[Pixel Fit] Error: {e}")
+        return {**base,
+                'status': 'unknown', 'label': '⚪ Fit Unknown',
+                'fit_score': 50, 'color': '#9e9e9e',
+                'recommended_size': gs, 'alternative_size': gs,
+                'message': 'Could not fully analyse fit from this image.',
+                'detailed_advice': 'For best results, upload a clear full-body or half-body photo with good lighting.'}
+
+
+def analyze_fit(user_img_path, garment_img_path, gtype, garment_size):
+    """
+    Master fit analysis orchestrator.
+    Tries Claude Vision AI first; falls back to smart pixel analysis.
+    Always returns a complete, display-ready fit dict.
+    """
+    # 1. Try Claude AI Vision
+    if ANTHROPIC_API_KEY:
+        ai_result = analyze_fit_with_claude(user_img_path, garment_img_path, gtype, garment_size)
+        if ai_result:
+            print(f"[Fit] ✅ Claude AI — body: {ai_result.get('body_type')}, cut: {ai_result.get('garment_cut')}, recommended: {ai_result.get('recommended_size')}")
+            return ai_result
+        print("[Fit] ⚠ Claude AI failed — using pixel fallback")
+
+    # 2. Pixel fallback
+    result = analyze_fit_pixel(user_img_path, garment_img_path, gtype, garment_size)
+    print(f"[Fit] 📐 Pixel analysis — status: {result.get('status')}, recommended: {result.get('recommended_size')}")
+    return result
 
 # ═══════════════════════════════════════════════════════════════════
 # DATABASE
@@ -398,22 +828,47 @@ CREATE TABLE IF NOT EXISTS admins (
 """
 
 SAMPLES = [
-    ('Blue Stripe Jeans',       'jeans',  'Blue',   'M',  'real_jeans_blue_stripe.jpg'),
-    ('Black Skinny Pants',      'pants',  'Black',  'M',  'real_pants_black.png'),
-    ('Wide Leg Jeans',          'jeans',  'Blue',   'L',  'real_jeans_wide.png'),
-    ('Pink Bow Blouse',         'blouse', 'Pink',   'S',  'real_blouse_pink.png'),
-    ('White Elegant Skirt',     'skirt',  'White',  'M',  'real_skirt_white.jpg'),
-    ('Black Formal Suit',       'suit',   'Black',  'L',  'real_suit_black.jpg'),
-    ('Floral Blouse',           'blouse', 'Floral', 'M',  'real_blouse_floral1.jpg'),
-    ('3D Flower Blouse',        'blouse', 'Peach',  'M',  'real_blouse_floral2.jpg'),
-    ('White Embroidery Blouse', 'blouse', 'White',  'S',  'real_blouse_embroidery.jpg'),
-    ('White Rose Blouse',       'blouse', 'White',  'M',  'real_blouse_white_rose.jpg'),
-    ('Pink Bow Sleeve Blouse',  'blouse', 'Pink',   'S',  'real_blouse_pink_bow.jpg'),
-    ('Pink Ruffled Camisole',   'blouse', 'Pink',   'S',  'real_camisole_pink.jpg'),
-    ('Beige Chino Pants',       'pants',  'Beige',  'M',  'real_pants_beige.jpg'),
-    ('Ripped Blue Jeans',       'jeans',  'Blue',   'M',  'real_jeans_ripped.jpg'),
-    ('Navy Blue Jeans',         'jeans',  'Navy',   'L',  'real_jeans_navy.jpg'),
-    ('Grey Formal Pants',       'pants',  'Grey',   'M',  'real_pants_grey.jpg'),
+    # ── Shirts ────────────────────────────────────────────────────────
+    ('Blue Formal Shirt',        'shirt',  'Blue',   'M',  'formal-shirt-blue-formal-shirt-with-button-up-design-tE2ADHya_t.jpg'),
+    ('White Formal Shirt',       'shirt',  'White',  'M',  'formal-shirt-shirt-white-shirt-long-sleeves-button-down-collar-lightweight-fabric-10hMqcqh_t.jpg'),
+    # ── Hoodies ───────────────────────────────────────────────────────
+    ('Blue Casual Hoodie',       'hoodie', 'Blue',   'M',  'hoodie-comfortable-blue-hoodie-for-casual-wear-Z2e1wS7v_t.jpg'),
+    ('Yellow Casual Hoodie',     'hoodie', 'Yellow', 'M',  'hoodie-cozy-yellow-hoodie-for-casual-wear-Q2NsVgyS_t.jpg'),
+    ('Gray Casual Hoodie',       'hoodie', 'Gray',   'M',  'hoodie-gray-hoodie-for-casual-wear-eN9T92h3_t.jpg'),
+    ('Pink Casual Hoodie',       'hoodie', 'Pink',   'S',  'hoodie-pink-hoodie-for-casual-wear-R5CuUctG_t.jpg'),
+    ('Red Casual Hoodie',        'hoodie', 'Red',    'M',  'hoodie-red-hoodie-for-casual-wear-0G9zkbB4_t.jpg'),
+    # ── Frocks ────────────────────────────────────────────────────────
+    ('Frock Style 1',            'frock',  'Multi',  'M',  'frock1.jpg'),
+    ('Frock Style 2',            'frock',  'Multi',  'M',  'frock2.jpg'),
+    # ── Blouses ───────────────────────────────────────────────────────
+    ('Pink Bow Blouse',          'blouse', 'Pink',   'S',  'real_blouse_pink.png'),
+    ('Floral Blouse',            'blouse', 'Floral', 'M',  'real_blouse_floral1.jpg'),
+    ('3D Flower Blouse',         'blouse', 'Peach',  'M',  'real_blouse_floral2.jpg'),
+    ('White Embroidery Blouse',  'blouse', 'White',  'S',  'real_blouse_embroidery.jpg'),
+    ('White Rose Blouse',        'blouse', 'White',  'M',  'real_blouse_white_rose.jpg'),
+    ('Pink Bow Sleeve Blouse',   'blouse', 'Pink',   'S',  'real_blouse_pink_bow.jpg'),
+    ('Pink Ruffled Camisole',    'blouse', 'Pink',   'S',  'real_camisole_pink.jpg'),
+    # ── Jeans ─────────────────────────────────────────────────────────
+    ('Blue Stripe Jeans',        'jeans',  'Blue',   'M',  'real_jeans_blue_stripe.jpg'),
+    ('Wide Leg Jeans',           'jeans',  'Blue',   'L',  'real_jeans_wide.png'),
+    ('Ripped Blue Jeans',        'jeans',  'Blue',   'M',  'real_jeans_ripped.jpg'),
+    ('Navy Blue Jeans',          'jeans',  'Navy',   'L',  'real_jeans_navy.jpg'),
+    # ── Pants ─────────────────────────────────────────────────────────
+    ('Black Skinny Pants',       'pants',  'Black',  'M',  'real_pants_black.png'),
+    ('Beige Chino Pants',        'pants',  'Beige',  'M',  'real_pants_beige.jpg'),
+    ('Grey Formal Pants',        'pants',  'Grey',   'M',  'real_pants_grey.jpg'),
+    ('Colorful Floral Pants',    'pants',  'Multi',  'M',  'pants-colorful-floral-pattern-pants-3NTS00kH_t.jpg'),
+    # ── Skirts ────────────────────────────────────────────────────────
+    ('White Elegant Skirt',      'skirt',  'White',  'M',  'real_skirt_white.jpg'),
+    ('Brown Pleated Skirt',      'skirt',  'Brown',  'M',  'skirt-brown-pleated-skirt-illustration-7LBGzLJ6_t.jpg'),
+    ('Floral Printed Skirt',     'skirt',  'Multi',  'M',  'skirt-colorful-floral-printed-skirt-in-bohemian-style-hBrmQbJd_t.jpg'),
+    ('Floral Pattern Skirt',     'skirt',  'Floral', 'S',  'skirt-floral-patterned-skirt-design-A5FPXCBi_t.jpg'),
+    ('Peach Bow Skirt',          'skirt',  'Peach',  'S',  'skirt-peach-colored-skirt-with-bow-gqgC2LfX_t.jpg'),
+    ('Orange Bow Skirt',         'skirt',  'Orange', 'S',  'skirt-stylish-orange-bow-skirt-illustration-jQyKU6vy_t.jpg'),
+    # ── Suits ─────────────────────────────────────────────────────────
+    ('Black Formal Suit',        'suit',   'Black',  'L',  'real_suit_black.jpg'),
+    # ── Other ─────────────────────────────────────────────────────────
+    ('Casual Top',               'top',    'Multi',  'M',  '11.png'),
 ]
 
 def create_garment_preview(filename, gtype, color_name):
@@ -601,18 +1056,10 @@ def tryon():
         success, mode = apply_tryon(u_path, g_path, r_path, garment['type'])
 
         # ── FIT ANALYSIS ──────────────────────────────────────────
-        # When FASHN AI succeeds, the garment is perfectly wrapped —
-        # no need for pixel-based guessing; just report Perfect Fit.
+        # Always run smart fit analysis regardless of try-on mode
+        fit = analyze_fit(u_path, g_path, garment['type'], garment['size'] or 'M')
         if mode == "ai":
-            fit = {
-                'status': 'perfect',
-                'label': '🟢 Perfect Fit',
-                'message': 'FASHN AI wrapped the garment perfectly on your body.',
-                'color': '#00c853',
-                'ai_mode': True
-            }
-        else:
-            fit = analyze_fit(u_path, g_path, garment['type'], garment['size'])
+            fit['ai_tryon'] = True  # tag that FASHN was used for the visual
 
         fit_json = json.dumps(fit)
 
@@ -753,4 +1200,3 @@ def admin_users():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, port=5000)
-    

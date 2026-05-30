@@ -3,3 +3,6 @@ werkzeug==3.0.3
 opencv-python==4.10.0.84
 numpy==1.26.4
 Pillow==10.4.0
+python-dotenv
+requests
+gunicorn

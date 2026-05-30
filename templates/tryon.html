@@ -3,54 +3,63 @@
 {% block content %}
 <div class="container">
   <div class="page-header anim-fade-up">
-    <h1>Virtual Try-On <span style="color:var(--accent)">Studio</span></h1>
-    <p>Upload your photo, pick a garment category and generate your look</p>
+    <h1>Virtual Try-On <span style="color:var(--accent)">Studio</span> ✦</h1>
+    <p>Upload your photo, pick a garment and generate your look</p>
   </div>
 
   <form method="POST" enctype="multipart/form-data">
-    <div class="layout-split">
-      <!-- LEFT -->
-      <div style="display:flex;flex-direction:column;gap:1.5rem">
+    <div class="tryon-layout">
 
-        <!-- Upload -->
-        <div class="card card-glow anim-fade-up" style="border-color:rgba(200,169,110,0.15)">
-          <h3 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:1.2rem">📷 Your Photo</h3>
+      <!-- ═══ LEFT COLUMN ═══ -->
+      <div class="tryon-left">
+
+        <!-- Upload card -->
+        <div class="card card-glow card-3d anim-fade-up" style="border-color:rgba(200,169,110,.15)">
+          <div class="card-label">📷 Your Photo</div>
           <div class="upload-zone" id="uploadZone">
             <input type="file" name="user_image" id="imageInput" accept="image/*" required onchange="previewImage(event)">
-            <span class="u-icon">📁</span>
-            <p><strong>Click to upload</strong> or drag & drop</p>
-            <p style="font-size:0.78rem;margin-top:0.4rem">JPG or PNG · Max 16MB · Front-facing photo</p>
+            <div class="upload-content" id="uploadContent">
+              <div class="upload-ring">
+                <span class="u-icon">📁</span>
+              </div>
+              <p><strong>Click to upload</strong> or drag & drop</p>
+              <p style="font-size:.76rem;margin-top:.3rem;opacity:.7">JPG or PNG · Max 16MB · Front-facing photo</p>
+            </div>
           </div>
           <div id="previewBox" style="display:none;margin-top:1rem;text-align:center">
-            <img id="previewImg" style="max-width:100%;max-height:280px;border-radius:12px;border:1px solid var(--border)">
-            <div style="display:inline-flex;align-items:center;gap:0.4rem;background:rgba(122,248,202,0.1);border:1px solid rgba(122,248,202,0.2);color:var(--accent3);padding:0.3rem 0.85rem;border-radius:50px;font-size:0.78rem;font-weight:700;margin-top:0.7rem">✓ Photo ready</div>
+            <div class="preview-frame">
+              <img id="previewImg" style="max-width:100%;max-height:260px;border-radius:12px;border:1px solid var(--border)">
+              <div class="preview-glow"></div>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(122,248,202,.1);border:1px solid rgba(122,248,202,.2);color:var(--accent3);padding:.3rem .85rem;border-radius:50px;font-size:.76rem;font-weight:700;margin-top:.7rem">✓ Photo ready</div>
           </div>
         </div>
 
-        <!-- Category tabs + garment grid -->
+        <!-- Garment picker -->
         <div class="card anim-fade-up-2">
-          <h3 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:1rem">👗 Select Garment</h3>
+          <div class="card-label">👗 Select Garment</div>
           <input type="hidden" name="garment_id" id="garmentId" value="{{ garment.id if garment else '' }}" required>
 
           {% set icons = {'top':'👕','shirt':'👔','abaya':'🧕','kameez':'👘','shalwar':'🩲','pants':'👖','jeans':'👖','skirt':'👗','blouse':'👚','jacket':'🧥','hoodie':'🧥'} %}
           {% set labels = {'top':'Tops','shirt':'Shirts','abaya':'Abaya','kameez':'Kameez','shalwar':'Shalwar','pants':'Pants','jeans':'Jeans','skirt':'Skirts','blouse':'Blouses','jacket':'Jackets','hoodie':'Hoodies'} %}
 
-          <!-- Category filter tabs -->
-          <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem" id="catTabs">
+          <!-- Category tabs -->
+          <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1rem" id="catTabs">
             <button type="button" class="cat-tab active" onclick="filterCat('all',this)">All</button>
             {% for gtype in grouped.keys() %}
             <button type="button" class="cat-tab" onclick="filterCat('{{ gtype }}',this)">{{ icons.get(gtype,'') }} {{ labels.get(gtype,gtype.title()) }}</button>
             {% endfor %}
           </div>
 
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.7rem;max-height:380px;overflow-y:auto;padding-right:0.3rem" id="garmentGrid">
+          <div class="garment-scroll" id="garmentGrid">
             {% for g in garments %}
             <div class="garment-card {% if garment and garment.id==g.id %}selected{% endif %}"
-                 id="gc-{{ g.id }}" data-type="{{ g.type }}" onclick="selectGarment({{ g.id }},'{{ g.name }}','{{ g.color }} · {{ g.size }}',this)">
-              <img src="/static/garments/{{ g.image_path }}" alt="{{ g.name }}" style="height:80px;object-fit:contain" onerror="this.style.opacity='0.3'">
-              <div class="g-info" style="padding:0.5rem 0.7rem">
-                <h4 style="font-size:0.8rem">{{ g.name }}</h4>
-                <p style="font-size:0.72rem">{{ g.color }} · {{ g.size }}</p>
+                 id="gc-{{ g.id }}" data-type="{{ g.type }}"
+                 onclick="selectGarment({{ g.id }},'{{ g.name }}','{{ g.color }} · {{ g.size }}',this)">
+              <img src="/static/garments/{{ g.image_path }}" alt="{{ g.name }}" style="height:80px;object-fit:contain" onerror="this.style.opacity='.3'">
+              <div class="g-info" style="padding:.5rem .7rem">
+                <h4 style="font-size:.8rem">{{ g.name }}</h4>
+                <p style="font-size:.72rem">{{ g.color }} · {{ g.size }}</p>
               </div>
             </div>
             {% endfor %}
@@ -58,63 +67,100 @@
         </div>
       </div>
 
-      <!-- RIGHT -->
-      <div style="display:flex;flex-direction:column;gap:1.5rem">
+      <!-- ═══ RIGHT COLUMN ═══ -->
+      <div class="tryon-right">
+
+        <!-- 3D Model Preview -->
+        <div class="card card-3d anim-fade-up model-preview-card" id="modelCard">
+          <div class="card-label">✦ 3D Model Preview</div>
+          <div class="model-scene" id="modelScene">
+            <canvas id="modelCanvas"></canvas>
+            <!-- Dress wrap animation overlay -->
+            <div class="wrap-overlay" id="wrapOverlay">
+              <div class="wrap-ring w1"></div>
+              <div class="wrap-ring w2"></div>
+              <div class="wrap-ring w3"></div>
+              <div class="wrap-text-anim" id="wrapText">Fitting…</div>
+            </div>
+            <div class="model-controls">
+              <button type="button" class="mc-btn" id="rotBtn" onclick="toggleAutoRot()" title="Auto Rotate">⟳</button>
+              <button type="button" class="mc-btn" onclick="resetCam()" title="Reset">⌖</button>
+            </div>
+            <div class="model-hint">↔ Drag · Scroll zoom</div>
+          </div>
+          <!-- Color selector on model card -->
+          <div id="colorRow" style="display:none;margin-top:1rem">
+            <div style="font-size:.74rem;color:var(--text-muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">Preview Color</div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              <div class="clr-swatch active" style="background:#c8a96e" onclick="setModelColor(this,'#c8a96e')"></div>
+              <div class="clr-swatch" style="background:#e8b4b8" onclick="setModelColor(this,'#e8b4b8')"></div>
+              <div class="clr-swatch" style="background:#7b68b0" onclick="setModelColor(this,'#7b68b0')"></div>
+              <div class="clr-swatch" style="background:#4a8fa8" onclick="setModelColor(this,'#4a8fa8')"></div>
+              <div class="clr-swatch" style="background:#2d4a3e" onclick="setModelColor(this,'#2d4a3e')"></div>
+              <div class="clr-swatch" style="background:#e8e0d0" onclick="setModelColor(this,'#e8e0d0')"></div>
+              <div class="clr-swatch" style="background:#c94040" onclick="setModelColor(this,'#c94040')"></div>
+              <div class="clr-swatch" style="background:#2a1f3e" onclick="setModelColor(this,'#2a1f3e')"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Tips -->
-        <div class="card anim-fade-up" style="border-color:rgba(200,169,110,0.15);background:linear-gradient(135deg,rgba(200,169,110,0.06),rgba(200,169,110,0.02))">
-          <h3 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:1rem">📋 Tips for Best Results</h3>
-          <div style="display:flex;flex-direction:column;gap:0.6rem;font-size:0.87rem">
-            <div style="display:flex;gap:0.7rem;padding:0.5rem;background:rgba(255,255,255,0.02);border-radius:8px"><span>✅</span><span>Use a <strong>clear, well-lit</strong> photo</span></div>
-            <div style="display:flex;gap:0.7rem;padding:0.5rem;background:rgba(255,255,255,0.02);border-radius:8px"><span>✅</span><span>Face camera <strong>directly (front view)</strong></span></div>
-            <div style="display:flex;gap:0.7rem;padding:0.5rem;background:rgba(255,255,255,0.02);border-radius:8px"><span>✅</span><span>Plain <strong>background</strong> preferred</span></div>
-            <div style="display:flex;gap:0.7rem;padding:0.5rem;background:rgba(255,255,255,0.02);border-radius:8px"><span>✅</span><span>Full <strong>upper body visible</strong> in frame</span></div>
-            <div style="display:flex;gap:0.7rem;padding:0.5rem;background:rgba(255,255,255,0.02);border-radius:8px"><span>⚠️</span><span>Avoid dark / heavily patterned clothes</span></div>
+        <div class="card anim-fade-up-2" style="border-color:rgba(200,169,110,.12);background:linear-gradient(135deg,rgba(200,169,110,.05),rgba(200,169,110,.02))">
+          <div class="card-label">📋 Tips for Best Results</div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;font-size:.86rem">
+            <div class="tip-row"><span class="tip-ic good">✓</span><span>Use a <strong>clear, well-lit</strong> photo</span></div>
+            <div class="tip-row"><span class="tip-ic good">✓</span><span>Face camera <strong>directly (front view)</strong></span></div>
+            <div class="tip-row"><span class="tip-ic good">✓</span><span>Plain <strong>background</strong> preferred</span></div>
+            <div class="tip-row"><span class="tip-ic good">✓</span><span>Full <strong>upper body visible</strong> in frame</span></div>
+            <div class="tip-row"><span class="tip-ic warn">⚠</span><span>Avoid dark / heavily patterned clothes</span></div>
           </div>
         </div>
 
-        <!-- Selected preview -->
+        <!-- Selected garment pill -->
         <div id="selectedPreview" style="display:{% if garment %}block{% else %}none{% endif %}">
-          <div class="card" style="border-color:rgba(122,248,202,0.2);background:rgba(122,248,202,0.04)">
-            <div style="color:var(--accent3);font-size:0.78rem;font-weight:700;margin-bottom:0.5rem">✓ SELECTED GARMENT</div>
+          <div class="card" style="border-color:rgba(122,248,202,.2);background:rgba(122,248,202,.04)">
+            <div style="color:var(--accent3);font-size:.74rem;font-weight:700;letter-spacing:.08em;margin-bottom:.4rem">✓ SELECTED GARMENT</div>
             <p id="selectedName" style="font-family:'Playfair Display',serif;font-weight:700;font-size:1.05rem">{{ garment.name if garment else '' }}</p>
-            <p id="selectedInfo" style="font-size:0.84rem;color:var(--text-muted);margin-top:0.2rem">{{ (garment.color + ' · ' + garment.size) if garment else '' }}</p>
+            <p id="selectedInfo" style="font-size:.84rem;color:var(--text-muted);margin-top:.2rem">{{ (garment.color+' · '+garment.size) if garment else '' }}</p>
           </div>
         </div>
 
-        <!-- FASHN AI Status -->
-{% if ai_enabled %}
-<div class="card anim-fade-up-3" style="border-color:rgba(0,200,83,0.3);background:linear-gradient(135deg,rgba(0,200,83,0.07),rgba(0,200,83,0.02));margin-bottom:0">
-  <div style="display:flex;align-items:center;gap:0.8rem">
-    <div style="font-size:1.8rem">✨</div>
-    <div>
-      <div style="font-weight:700;font-size:0.9rem;color:#00c853">FASHN AI Active</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem">AI will <strong style="color:var(--text)">wrap the garment</strong> realistically on your body</div>
-    </div>
-    <div style="margin-left:auto;background:rgba(0,200,83,0.15);border:1px solid rgba(0,200,83,0.3);color:#00c853;padding:0.25rem 0.65rem;border-radius:50px;font-size:0.72rem;font-weight:700;white-space:nowrap">● READY</div>
-  </div>
-</div>
-{% else %}
-<div class="card anim-fade-up-3" style="border-color:rgba(158,158,158,0.2);background:rgba(158,158,158,0.04);margin-bottom:0">
-  <div style="display:flex;align-items:center;gap:0.8rem">
-    <div style="font-size:1.8rem">🖼️</div>
-    <div>
-      <div style="font-weight:700;font-size:0.9rem;color:var(--text-muted)">Overlay Mode</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem">Set your FASHN API key in <code>app.py</code> for AI try-on</div>
-    </div>
-  </div>
-</div>
-{% endif %}
+        <!-- AI Status -->
+        {% if ai_enabled %}
+        <div class="card anim-fade-up-3" style="border-color:rgba(0,200,83,.25);background:linear-gradient(135deg,rgba(0,200,83,.07),rgba(0,200,83,.02))">
+          <div style="display:flex;align-items:center;gap:.8rem">
+            <div style="font-size:1.8rem">✨</div>
+            <div>
+              <div style="font-weight:700;font-size:.9rem;color:#00c853">FASHN AI Active</div>
+              <div style="font-size:.77rem;color:var(--text-muted);margin-top:.2rem">AI will <strong style="color:var(--text)">wrap the garment</strong> realistically on your body</div>
+            </div>
+            <div style="margin-left:auto;background:rgba(0,200,83,.12);border:1px solid rgba(0,200,83,.3);color:#00c853;padding:.2rem .6rem;border-radius:50px;font-size:.7rem;font-weight:700;white-space:nowrap">● READY</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="card anim-fade-up-3" style="border-color:rgba(158,158,158,.15);background:rgba(158,158,158,.03)">
+          <div style="display:flex;align-items:center;gap:.8rem">
+            <div style="font-size:1.8rem">🖼️</div>
+            <div>
+              <div style="font-weight:700;font-size:.9rem;color:var(--text-muted)">Overlay Mode</div>
+              <div style="font-size:.77rem;color:var(--text-muted);margin-top:.2rem">Set your FASHN API key in <code style="background:rgba(255,255,255,.05);padding:.1rem .4rem;border-radius:4px">app.py</code> for AI try-on</div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
 
         <!-- Submit -->
         <div class="anim-fade-up-4">
-          <button type="submit" class="btn btn-primary" id="submitBtn"
-            style="width:100%;justify-content:center;padding:1.1rem;font-size:1rem;border-radius:16px">
-            🪄 Generate Virtual Try-On
+          <button type="submit" class="btn btn-primary submit-btn" id="submitBtn">
+            <span class="submit-icon">🪄</span>
+            <span>Generate Virtual Try-On</span>
+            <span class="submit-arrow">→</span>
           </button>
-          <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:0.6rem">Processing takes ~4–6 seconds</p>
+          <p style="text-align:center;font-size:.78rem;color:var(--text-muted);margin-top:.6rem">Processing takes ~4–6 seconds</p>
           <div id="loadingBox" style="display:none;text-align:center;margin-top:1.2rem;padding:2rem;background:var(--surface2);border-radius:16px;border:1px solid var(--border)">
             <div class="spinner" style="margin:0 auto 1rem"></div>
-            <p style="color:var(--text-muted);font-size:0.88rem">Generating your look...</p>
+            <p style="color:var(--text-muted);font-size:.87rem">Generating your look…</p>
+            <div class="loading-bar"><div class="loading-fill"></div></div>
           </div>
         </div>
       </div>
@@ -123,16 +169,318 @@
 </div>
 
 <style>
-.cat-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);padding:0.35rem 0.85rem;border-radius:50px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif}
+.tryon-layout{display:grid;grid-template-columns:1fr 1.1fr;gap:1.8rem;align-items:start}
+.tryon-left,.tryon-right{display:flex;flex-direction:column;gap:1.4rem}
+
+.card-label{font-size:.75rem;font-weight:700;color:var(--text-muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:1rem}
+
+/* Upload ring animation */
+.upload-ring{
+  width:72px;height:72px;border-radius:50%;
+  background:rgba(200,169,110,.08);border:2px solid rgba(200,169,110,.2);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto .8rem;
+  position:relative;
+  transition:transform .3s,box-shadow .3s;
+}
+.upload-zone:hover .upload-ring{transform:scale(1.1);box-shadow:0 0 30px rgba(200,169,110,.2)}
+.upload-ring::before{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  border:1px solid rgba(200,169,110,.15);
+  animation:ringPulse 2s ease-in-out infinite;
+}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.1);opacity:1}}
+
+.preview-frame{position:relative;display:inline-block}
+.preview-glow{position:absolute;inset:-10px;background:radial-gradient(circle,rgba(200,169,110,.08),transparent);border-radius:20px;pointer-events:none}
+
+/* Garment scroll */
+.garment-scroll{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;
+  max-height:370px;overflow-y:auto;padding-right:.3rem;
+}
+.garment-scroll::-webkit-scrollbar{width:4px}
+.garment-scroll::-webkit-scrollbar-track{background:transparent}
+.garment-scroll::-webkit-scrollbar-thumb{background:rgba(200,169,110,.2);border-radius:2px}
+
+/* Cat tabs */
+.cat-tab{
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  color:var(--text-muted);padding:.3rem .8rem;border-radius:50px;
+  font-size:.76rem;font-weight:600;cursor:pointer;
+  transition:all .25s;font-family:'Plus Jakarta Sans',sans-serif;
+}
 .cat-tab:hover{border-color:var(--border-bright);color:var(--text)}
-.cat-tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
-#garmentGrid::-webkit-scrollbar{width:4px;}
-#garmentGrid::-webkit-scrollbar-track{background:transparent;}
-#garmentGrid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.cat-tab.active{background:var(--accent);color:#000;border-color:var(--accent);box-shadow:0 0 16px rgba(200,169,110,.25)}
+
+/* 3D Model Scene */
+.model-preview-card{padding:1.4rem}
+.model-scene{
+  position:relative;border-radius:16px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 20%,rgba(200,169,110,.06),rgba(4,4,10,.8));
+  border:1px solid rgba(200,169,110,.1);
+}
+#modelCanvas{display:block;width:100%;height:320px}
+.model-controls{
+  position:absolute;top:.75rem;right:.75rem;
+  display:flex;gap:.4rem;
+}
+.mc-btn{
+  width:34px;height:34px;border-radius:8px;
+  background:rgba(4,4,10,.7);border:1px solid rgba(255,255,255,.08);
+  color:var(--text-muted);font-size:14px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);
+}
+.mc-btn:hover,.mc-btn.active{border-color:rgba(200,169,110,.4);color:var(--accent)}
+.model-hint{
+  position:absolute;bottom:.7rem;left:50%;transform:translateX(-50%);
+  font-size:.7rem;color:rgba(255,255,255,.3);letter-spacing:.08em;text-transform:uppercase;
+  background:rgba(4,4,10,.5);padding:.3rem .75rem;border-radius:50px;
+  backdrop-filter:blur(8px);white-space:nowrap;
+}
+
+/* Wrap overlay */
+.wrap-overlay{
+  position:absolute;inset:0;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;
+}
+.wrap-overlay.active{animation:wrapFlash 1.4s ease-out forwards}
+@keyframes wrapFlash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+.wrap-ring{
+  position:absolute;border-radius:50%;border:1px solid rgba(200,169,110,.4);
+  animation:wrapExpand 1.4s ease-out forwards;opacity:0;
+}
+.w1{width:60px;height:60px;animation-delay:.0s}
+.w2{width:120px;height:120px;animation-delay:.15s}
+.w3{width:200px;height:200px;animation-delay:.3s}
+@keyframes wrapExpand{
+  0%{transform:scale(.5);opacity:.8}
+  100%{transform:scale(1.5);opacity:0}
+}
+.wrap-text-anim{
+  font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:300;
+  color:rgba(200,169,110,.9);letter-spacing:.12em;position:relative;z-index:2;
+  animation:wrapTextIn 1.4s ease-out forwards;opacity:0;
+}
+@keyframes wrapTextIn{
+  0%{opacity:0;transform:scale(.8) translateY(10px)}
+  25%{opacity:1;transform:scale(1.02) translateY(0)}
+  80%{opacity:.8}
+  100%{opacity:0;transform:scale(1.1) translateY(-5px)}
+}
+
+/* Color swatches */
+.clr-swatch{
+  width:24px;height:24px;border-radius:50%;cursor:pointer;
+  transition:all .2s;border:2px solid transparent;
+}
+.clr-swatch:hover{transform:scale(1.2)}
+.clr-swatch.active{border-color:rgba(255,255,255,.8);box-shadow:0 0 8px rgba(255,255,255,.3);transform:scale(1.15)}
+
+/* Tips */
+.tip-row{display:flex;gap:.6rem;padding:.4rem .6rem;background:rgba(255,255,255,.02);border-radius:8px;align-items:center}
+.tip-ic{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0}
+.tip-ic.good{background:rgba(122,248,202,.1);color:var(--accent3)}
+.tip-ic.warn{background:rgba(255,217,61,.1);color:var(--warning)}
+
+/* Submit */
+.submit-btn{
+  width:100%;justify-content:center;padding:1.1rem;
+  font-size:1rem;border-radius:16px;gap:.7rem;
+  background:linear-gradient(135deg,var(--accent),#d4b87a,var(--accent));
+  background-size:200% auto;animation:gradMove 3s linear infinite;
+  box-shadow:0 0 30px rgba(200,169,110,.2);
+}
+.submit-btn:hover{box-shadow:0 0 50px rgba(200,169,110,.4);transform:translateY(-2px)}
+.submit-arrow{transition:transform .3s}
+.submit-btn:hover .submit-arrow{transform:translateX(4px)}
+.submit-icon{animation:iconWiggle 2s ease-in-out infinite}
+@keyframes iconWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes gradMove{from{background-position:0%}to{background-position:200%}}
+
+/* Loading bar */
+.loading-bar{height:3px;background:var(--surface3);border-radius:2px;margin-top:.8rem;overflow:hidden}
+.loading-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;animation:loadProg 5s linear forwards}
+@keyframes loadProg{from{width:0%}to{width:95%}}
+
+@media(max-width:768px){.tryon-layout{grid-template-columns:1fr}}
 </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+// ══════════════════════════════════════
+//  3D MODEL PREVIEW (Three.js)
+// ══════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('modelCanvas');
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.3;
+
+  function resize(){
+    const w = canvas.parentElement.clientWidth;
+    const h = 320;
+    renderer.setSize(w, h);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+  }
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(0, 1.6, 5);
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0xfff5e0, 0.5));
+  const key = new THREE.DirectionalLight(0xfff0d0, 2.5); key.position.set(3,5,4); key.castShadow=true; scene.add(key);
+  const fill = new THREE.DirectionalLight(0xe8c0d0, 0.9); fill.position.set(-3,3,2); scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xc9a96e, 1.5); rim.position.set(0,4,-4); scene.add(rim);
+  const pt1 = new THREE.PointLight(0xc9a96e, 1.8, 8); scene.add(pt1);
+  const pt2 = new THREE.PointLight(0xe8b4b8, 0.9, 6); scene.add(pt2);
+
+  // Floor
+  const floorMesh = new THREE.Mesh(new THREE.CircleGeometry(3,64), new THREE.MeshStandardMaterial({color:0x0a0b12,roughness:.8}));
+  floorMesh.rotation.x=-Math.PI/2; floorMesh.position.y=-1.6; floorMesh.receiveShadow=true; scene.add(floorMesh);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(.5,1.2,64), new THREE.MeshBasicMaterial({color:0xc9a96e,transparent:true,opacity:.06,side:THREE.DoubleSide}));
+  ring.rotation.x=-Math.PI/2; ring.position.y=-1.59; scene.add(ring);
+
+  // Model group
+  const mg = new THREE.Group(); scene.add(mg);
+  const skin = 0xd4a574, hair = 0x2a1f1a;
+  const sm = (c,r=.8)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
+
+  // Body parts
+  const addMesh = (geo,mat,px=0,py=0,pz=0,sx=1,sy=1,sz=1)=>{const m=new THREE.Mesh(geo,mat);m.position.set(px,py,pz);m.scale.set(sx,sy,sz);m.castShadow=true;mg.add(m);return m};
+  addMesh(new THREE.CylinderGeometry(.23,.19,.72,24),sm(skin),.0,.5); // torso
+  addMesh(new THREE.SphereGeometry(.13,16,12),sm(skin),-0.08,.68,.14,1,.85,.75); // bust L
+  addMesh(new THREE.SphereGeometry(.13,16,12),sm(skin),0.08,.68,.14,1,.85,.75); // bust R
+  addMesh(new THREE.CylinderGeometry(.07,.09,.18,16),sm(skin),0,.93); // neck
+  addMesh(new THREE.SphereGeometry(.19,24,20),sm(skin),0,1.18); // head
+  addMesh(new THREE.SphereGeometry(.2,24,20),sm(hair,.9),0,1.2,0,1,1.15,1); // hair
+  addMesh(new THREE.CylinderGeometry(.08,.04,.5,12),sm(hair,.9),0,.88,-.1); // hair drape
+  addMesh(new THREE.CylinderGeometry(.24,.22,.28,24),sm(skin),0,.1); // hips
+  // Arms
+  [-1,1].forEach(s=>{
+    addMesh(new THREE.CylinderGeometry(.055,.05,.55,12),sm(skin),s*.34,.5,0,1,1,1).rotation.z=s*.25;
+    addMesh(new THREE.SphereGeometry(.055,10,8),sm(skin),s*.44,.25);
+  });
+  // Legs
+  [-1,1].forEach(s=>{
+    addMesh(new THREE.CylinderGeometry(.075,.065,.65,12),sm(skin),s*.1,-1.0);
+    addMesh(new THREE.SphereGeometry(.09,12,8),sm(0x1a1010,.7),s*.1,-1.4,.04,1,.5,1.3); // shoe
+    addMesh(new THREE.CylinderGeometry(.015,.015,.2,8),sm(0x1a1010,.7),s*.1,-1.48,-.06); // heel
+  });
+
+  // Dress group
+  let dg = new THREE.Group(); mg.add(dg);
+  let dressColor = new THREE.Color(0xc8a96e);
+  let currentType = 'dress';
+
+  function buildDress(type, color){
+    while(dg.children.length) dg.remove(dg.children[0]);
+    const mat = new THREE.MeshStandardMaterial({color,roughness:.35,metalness:.05,side:THREE.DoubleSide,transparent:true,opacity:.97});
+    const mat2 = mat.clone(); mat2.color = new THREE.Color(color).multiplyScalar(.7);
+
+    if(type==='dress'||type==='default'){
+      const s=new THREE.Mesh(new THREE.CylinderGeometry(.7,1.0,1.55,32),mat); s.position.y=-.65; dg.add(s);
+      const b=new THREE.Mesh(new THREE.CylinderGeometry(.23,.26,.64,24),mat); b.position.y=.5; dg.add(b);
+      [-1,1].forEach(s2=>{const str=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.26,8),mat2);str.position.set(s2*.14,.9,.05);str.rotation.z=s2*.15;dg.add(str)});
+      const fr=new THREE.Mesh(new THREE.TorusGeometry(.95,.04,8,48),mat2); fr.rotation.x=Math.PI/2; fr.position.y=-1.42; dg.add(fr);
+    } else if(type==='jacket'||type==='hoodie'){
+      const b=new THREE.Mesh(new THREE.CylinderGeometry(.27,.25,.74,24),mat); b.position.y=.5; dg.add(b);
+      [-1,1].forEach(s2=>{
+        const sl=new THREE.Mesh(new THREE.CylinderGeometry(.08,.07,.65,16),mat); sl.position.set(s2*.33,.5,0); sl.rotation.z=s2*.28; dg.add(sl);
+        const lap=new THREE.Mesh(new THREE.BoxGeometry(.14,.38,.04),mat2); lap.position.set(s2*.07,.66,.22); lap.rotation.z=s2*.2; dg.add(lap);
+      });
+      const sk=new THREE.Mesh(new THREE.CylinderGeometry(.27,.46,.82,24),mat); sk.position.y=-.26; dg.add(sk);
+    } else if(type==='top'||type==='shirt'||type==='blouse'){
+      const b=new THREE.Mesh(new THREE.CylinderGeometry(.24,.23,.58,24),mat); b.position.y=.52; dg.add(b);
+      [-1,1].forEach(s2=>{const sl=new THREE.Mesh(new THREE.CylinderGeometry(.08,.07,.26,12),mat);sl.position.set(s2*.31,.7,0);sl.rotation.z=s2*.5;dg.add(sl)});
+      const sk=new THREE.Mesh(new THREE.CylinderGeometry(.24,.4,.6,24),mat); sk.position.y=-.12; dg.add(sk);
+    } else {
+      const sk=new THREE.Mesh(new THREE.CylinderGeometry(.28,.52,1.6,24),mat); sk.position.y=-.3; dg.add(sk);
+      const b=new THREE.Mesh(new THREE.CylinderGeometry(.27,.25,.76,24),mat); b.position.y=.5; dg.add(b);
+      [-1,1].forEach(s2=>{const sl=new THREE.Mesh(new THREE.CylinderGeometry(.085,.075,.76,16),mat);sl.position.set(s2*.34,.48,0);sl.rotation.z=s2*.26;dg.add(sl)});
+    }
+  }
+  buildDress(currentType, dressColor.clone());
+
+  // Particles behind model
+  const partGeo=new THREE.BufferGeometry();
+  const pp=new Float32Array(300*3);
+  for(let i=0;i<300;i++){pp[i*3]=(Math.random()-.5)*10;pp[i*3+1]=(Math.random()-.5)*8;pp[i*3+2]=(Math.random()-.5)*6-3}
+  partGeo.setAttribute('position',new THREE.BufferAttribute(pp,3));
+  scene.add(new THREE.Points(partGeo,new THREE.PointsMaterial({color:0xc9a96e,size:.04,transparent:true,opacity:.3})));
+
+  // Controls
+  let autoRot=true, dragging=false, prevX=0, prevY=0, rotY=0, rotX=0, tY=0, tX=0, zoom=5;
+  canvas.addEventListener('mousedown',e=>{dragging=true;prevX=e.clientX;prevY=e.clientY});
+  window.addEventListener('mouseup',()=>dragging=false);
+  window.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    autoRot=false;document.getElementById('rotBtn').classList.remove('active');
+    tY+=(e.clientX-prevX)*.009; tX+=(e.clientY-prevY)*.006;
+    tX=Math.max(-.5,Math.min(.5,tX)); prevX=e.clientX; prevY=e.clientY;
+  });
+  canvas.addEventListener('wheel',e=>{zoom+=e.deltaY*.006;zoom=Math.max(2.8,Math.min(9,zoom))});
+  canvas.addEventListener('touchstart',e=>{dragging=true;prevX=e.touches[0].clientX;prevY=e.touches[0].clientY});
+  canvas.addEventListener('touchend',()=>dragging=false);
+  canvas.addEventListener('touchmove',e=>{if(!dragging)return;autoRot=false;tY+=(e.touches[0].clientX-prevX)*.012;tX+=(e.touches[0].clientY-prevY)*.007;prevX=e.touches[0].clientX;prevY=e.touches[0].clientY});
+
+  window.toggleAutoRot=()=>{autoRot=!autoRot;document.getElementById('rotBtn').classList.toggle('active',autoRot)};
+  window.resetCam=()=>{tY=0;tX=0;zoom=5;autoRot=true;document.getElementById('rotBtn').classList.add('active')};
+  document.getElementById('rotBtn').classList.add('active');
+
+  // Expose dress builder for external use
+  window._buildDress = buildDress;
+  window._dressColor = dressColor;
+
+  let t=0;
+  (function anim(){
+    requestAnimationFrame(anim); t+=.012;
+    if(autoRot) tY+=.005;
+    rotY+=(tY-rotY)*.07; rotX+=(tX-rotX)*.07;
+    mg.rotation.y=rotY; mg.rotation.x=rotX;
+    mg.position.y=Math.sin(t*.6)*.015;
+    dg.children.forEach((c,i)=>{if(c.position.y<0)c.rotation.y=Math.sin(t*.8+i)*.018});
+    pt1.position.x=Math.sin(t*.5)*2.8; pt1.position.z=Math.cos(t*.5)*2.8;
+    pt2.position.x=Math.cos(t*.4)*2.2; pt2.position.z=Math.sin(t*.4)*2.2;
+    ring.material.opacity=.04+Math.sin(t*1.2)*.025;
+    ring.scale.x=ring.scale.z=1+Math.sin(t*.8)*.04;
+    camera.position.z=zoom;
+    renderer.render(scene,camera);
+  })();
+
+  resize();
+  window.addEventListener('resize',resize);
+
+  // Dress update from garment select
+  window._updateModelDress = function(type){
+    currentType = type || 'dress';
+    const overlay=document.getElementById('wrapOverlay');
+    overlay.classList.remove('active');
+    void overlay.offsetWidth;
+    overlay.classList.add('active');
+    setTimeout(()=>{ buildDress(currentType, window._dressColor.clone()); overlay.classList.remove('active'); },400);
+    document.getElementById('colorRow').style.display='block';
+  };
+})();
+
+// Color swatch
+window.setModelColor = function(el, hex){
+  document.querySelectorAll('.clr-swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  window._dressColor = new THREE.Color(hex);
+  window._updateModelDress(null);
+};
+
+// Garment select
 const garmentData={};
-{% for g in garments %}garmentData[{{g.id}}]={name:"{{g.name}}",info:"{{g.color}} · {{g.size}}"};{% endfor %}
+{% for g in garments %}garmentData[{{g.id}}]={name:"{{g.name}}",info:"{{g.color}} · {{g.size}}",type:"{{g.type}}"};{% endfor %}
 
 function selectGarment(id,name,info,el){
   document.querySelectorAll('.garment-card').forEach(c=>c.classList.remove('selected'));
@@ -141,6 +489,9 @@ function selectGarment(id,name,info,el){
   document.getElementById('selectedName').textContent=name;
   document.getElementById('selectedInfo').textContent=info;
   document.getElementById('selectedPreview').style.display='block';
+  // Update 3D model
+  const gd = garmentData[id];
+  if(gd && window._updateModelDress) window._updateModelDress(gd.type);
 }
 
 function filterCat(cat,btn){
@@ -152,12 +503,14 @@ function filterCat(cat,btn){
 }
 
 function previewImage(e){
-  const file=e.target.files[0]; if(!file)return;
+  const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=ev=>{
     document.getElementById('previewImg').src=ev.target.result;
     document.getElementById('previewBox').style.display='block';
+    document.getElementById('uploadContent').style.display='none';
     document.getElementById('uploadZone').style.borderColor='var(--accent3)';
+    document.getElementById('uploadZone').style.background='rgba(122,248,202,.04)';
   };
   reader.readAsDataURL(file);
 }

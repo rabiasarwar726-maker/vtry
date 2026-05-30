@@ -11,21 +11,26 @@
   {% set labels = {'top':'T-Shirts','shirt':'Formal Shirts','abaya':'Abayas','kameez':'Kameez','shalwar':'Shalwar','pants':'Pants','jeans':'Jeans','skirt':'Skirts','blouse':'Blouses','jacket':'Jackets','hoodie':'Hoodies','suit':'Suits'} %}
 
   {% for gtype, items in grouped.items() %}
-  <div style="margin-bottom:3rem">
-    <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;padding-bottom:0.8rem;border-bottom:1px solid var(--border)">
-      <span style="font-size:1.5rem">{{ icons.get(gtype,'👗') }}</span>
-      <h2 style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700">{{ labels.get(gtype, gtype.title()) }}</h2>
+  <div style="margin-bottom:3.5rem">
+    <!-- Category header -->
+    <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1.4rem;padding-bottom:.9rem;position:relative">
+      <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,rgba(200,169,110,.3),transparent)"></div>
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem">{{ icons.get(gtype,'👗') }}</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700">{{ labels.get(gtype, gtype.title()) }}</h2>
       <span class="badge badge-gold">{{ items|length }}</span>
     </div>
+
     <div class="grid-4">
       {% for g in items %}
       <div class="garment-card" onclick="window.location='/tryon?garment_id={{ g.id }}'">
-        <img src="/static/garments/{{ g.image_path }}" alt="{{ g.name }}" onerror="this.style.opacity='0.3'">
+        <!-- Glow corner -->
+        <div style="position:absolute;top:0;right:0;width:60px;height:60px;background:radial-gradient(circle at top right,rgba(200,169,110,.08),transparent);pointer-events:none;z-index:1"></div>
+        <img src="/static/garments/{{ g.image_path }}" alt="{{ g.name }}" onerror="this.style.opacity='.25'">
         <div class="g-info">
           <h4>{{ g.name }}</h4>
           <p>{{ g.color }} · Size {{ g.size }}</p>
-          <div style="margin-top:0.7rem">
-            <a href="{{ url_for('tryon', garment_id=g.id) }}" class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Try On →</a>
+          <div style="margin-top:.75rem">
+            <a href="{{ url_for('tryon', garment_id=g.id) }}" class="btn btn-primary btn-sm" onclick="event.stopPropagation()" style="border-radius:10px">Try On →</a>
           </div>
         </div>
       </div>

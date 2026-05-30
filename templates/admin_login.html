@@ -1,29 +1,41 @@
 {% extends 'base.html' %}
 {% block title %}Admin Login — VTRY{% endblock %}
 {% block content %}
-<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse 60% 50% at 50% 40%,rgba(232,196,255,0.06) 0%,transparent 70%)">
-  <div style="width:100%;max-width:400px" class="anim-scale">
-    <div style="text-align:center;margin-bottom:2.5rem">
-      <div style="width:64px;height:64px;background:rgba(232,196,255,0.1);border:1px solid rgba(232,196,255,0.2);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1rem">🛡</div>
-      <h2 style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;margin-bottom:0.4rem">Admin Panel</h2>
-      <p style="color:var(--text-muted);font-size:0.88rem">Sign in to manage VTRY system</p>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(255,107,107,0.05) 0%,transparent 70%)">
+
+  <!-- Shield shape -->
+  <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+    <div style="position:absolute;top:15%;right:8%;width:80px;height:80px;border:1px solid rgba(255,107,107,.1);border-radius:50%;animation:floatBob 6s ease-in-out infinite"></div>
+    <div style="position:absolute;bottom:20%;left:6%;width:50px;height:50px;border:1px solid rgba(200,169,110,.1);border-radius:8px;animation:floatBob 8s ease-in-out infinite;animation-delay:-3s;transform:rotate(15deg)"></div>
+  </div>
+
+  <div style="width:100%;max-width:400px;position:relative;z-index:5" class="anim-scale">
+    <div style="text-align:center;margin-bottom:1.8rem">
+      <div style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,rgba(255,107,107,.15),rgba(200,169,110,.1));border:1px solid rgba(255,107,107,.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .9rem;box-shadow:0 0 30px rgba(255,107,107,.1)">🛡</div>
+      <a href="/" style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:var(--accent);text-decoration:none;display:block;margin-bottom:.25rem">✦ VTRY</a>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:.25rem">Admin Access</h2>
+      <p style="color:var(--text-muted);font-size:.87rem">Restricted area — authorized personnel only</p>
     </div>
-    <div class="card" style="border-color:rgba(232,196,255,0.12)">
+
+    <div class="card-3d" style="background:rgba(10,11,18,.9);border:1px solid rgba(255,107,107,.12);border-radius:24px;padding:2rem 1.8rem;backdrop-filter:blur(24px);box-shadow:0 40px 80px rgba(0,0,0,.5);position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:10%;width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,107,107,.3),transparent)"></div>
       <form method="POST">
         <div class="form-group">
           <label>Admin Username</label>
-          <input type="text" name="username" placeholder="admin" required>
+          <div style="position:relative"><span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);font-size:.7rem;color:var(--text-muted)">@</span><input type="text" name="username" placeholder="admin" required style="padding-left:2.5rem"></div>
         </div>
         <div class="form-group">
-          <label>Password</label>
-          <input type="password" name="password" placeholder="••••••••" required>
+          <label>Admin Password</label>
+          <div style="position:relative"><span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);font-size:.65rem;color:var(--text-muted);letter-spacing:-.05em">●●●</span><input type="password" name="password" placeholder="••••••••" required style="padding-left:2.5rem"></div>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.85rem;background:linear-gradient(135deg,#e8c4ff,#c8a96e);color:#000">Sign In as Admin →</button>
+        <button type="submit" class="btn" style="width:100%;justify-content:center;padding:.9rem;font-size:.95rem;border-radius:14px;background:linear-gradient(135deg,rgba(255,107,107,.2),rgba(200,169,110,.15));border:1px solid rgba(255,107,107,.25);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;margin-top:.5rem;transition:all .3s">
+          🛡 Enter Admin Panel
+        </button>
       </form>
-      <div class="divider"></div>
-      <p style="text-align:center;font-size:0.82rem;color:var(--text-muted)">Default credentials: <strong style="color:var(--text-soft)">admin / admin123</strong></p>
+      <div style="text-align:center;margin-top:1.2rem">
+        <a href="/login" style="font-size:.83rem;color:var(--text-muted);text-decoration:none">← Back to User Login</a>
+      </div>
     </div>
-    <p style="text-align:center;margin-top:1.2rem;font-size:0.82rem"><a href="/login" style="color:var(--text-muted)">← Back to User Login</a></p>
   </div>
 </div>
 {% endblock %}

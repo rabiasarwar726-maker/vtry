@@ -10,14 +10,16 @@
   <div class="grid-3">
     {% for r in results %}
     <div class="result-card">
-      <img src="/static/results/{{ r.result_image }}" alt="Result" onerror="this.style.display='none'">
-      <div class="r-meta">
-        <strong>{{ r.garment_name }}</strong>
-        <span>{{ r.color }} · {{ r.created_at[:10] }}</span>
-        <div style="margin-top:0.7rem;display:flex;gap:0.5rem">
+      <div style="position:relative;overflow:hidden">
+        <img src="/static/results/{{ r.result_image }}" alt="Result" onerror="this.style.display='none'">
+        <div class="rc-hover-layer">
           <a href="/static/results/{{ r.result_image }}" download class="btn btn-primary btn-sm">⬇ Save</a>
           <a href="{{ url_for('tryon') }}" class="btn btn-ghost btn-sm">Try Again</a>
         </div>
+      </div>
+      <div class="r-meta">
+        <strong>{{ r.garment_name }}</strong>
+        <span>{{ r.color }} · {{ r.created_at[:10] }}</span>
       </div>
     </div>
     {% endfor %}
@@ -31,4 +33,8 @@
   </div>
   {% endif %}
 </div>
+<style>
+.rc-hover-layer{position:absolute;inset:0;background:rgba(4,4,10,.65);display:flex;align-items:center;justify-content:center;gap:.5rem;opacity:0;transition:opacity .3s;backdrop-filter:blur(4px)}
+.result-card:hover .rc-hover-layer{opacity:1}
+</style>
 {% endblock %}

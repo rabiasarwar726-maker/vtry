@@ -6,21 +6,146 @@
     <h1>All <span style="color:var(--accent)">Users</span> 👤</h1>
     <p>Registered users and their activity overview</p>
   </div>
-  <div class="card anim-fade-up">
-    <table>
-      <tr><th>#</th><th>Username</th><th>Email</th><th>Try-Ons</th><th>Joined</th></tr>
-      {% for u in users %}
-      <tr>
-        <td style="color:var(--text-muted)">{{ u.id }}</td>
-        <td><strong>{{ u.username }}</strong></td>
-        <td style="color:var(--text-muted)">{{ u.email }}</td>
-        <td><span class="badge badge-gold">{{ u.tryons }}</span></td>
-        <td style="color:var(--text-muted)">{{ u.created_at[:10] }}</td>
-      </tr>
-      {% else %}
-      <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:3rem">No users registered yet</td></tr>
-      {% endfor %}
-    </table>
+
+  <!-- Stats row -->
+  <div class="grid-3" style="margin-bottom:2rem">
+    <div class="stat-card anim-fade-up" style="padding:1.2rem 1.5rem">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="stat-num" style="color:var(--accent);font-size:2rem">{{ users|length }}</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem">👤</div>
+      </div>
+    </div>
+    <div class="stat-card anim-fade-up-2" style="padding:1.2rem 1.5rem">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="stat-num" style="color:var(--accent2);font-size:2rem">{{ users|selectattr('tryons','gt',0)|list|length }}</div>
+          <div class="stat-label">Active Users</div>
+        </div>
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(232,196,255,.1);border:1px solid rgba(232,196,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem">✨</div>
+      </div>
+    </div>
+    <div class="stat-card anim-fade-up-3" style="padding:1.2rem 1.5rem">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="stat-num" style="color:var(--accent3);font-size:2rem">{{ users|sum(attribute='tryons') }}</div>
+          <div class="stat-label">Total Try-Ons</div>
+        </div>
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(122,248,202,.1);border:1px solid rgba(122,248,202,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem">🪄</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users table card -->
+  <div class="card card-glow anim-fade-up-2">
+
+    <!-- Toolbar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem">
+      <h3 style="font-family:'Playfair Display',serif;font-weight:700;font-size:1.2rem">Registered Users</h3>
+      <div style="position:relative">
+        <span style="position:absolute;left:.9rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.8rem">🔍</span>
+        <input type="text" id="userSearch" placeholder="Search by name or email…" oninput="filterUsers()"
+          style="padding:.6rem 1rem .6rem 2.4rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:50px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;outline:none;transition:border .25s;min-width:260px">
+      </div>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table id="usersTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>User</th>
+            <th>Email</th>
+            <th>Try-Ons</th>
+            <th>Joined</th>
+            <th>Activity</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr class="user-row" data-name="{{ u.username|lower }}" data-email="{{ u.email|lower }}">
+            <td style="color:var(--text-muted);font-size:.82rem">#{{ u.id }}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:.7rem">
+                <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#000;flex-shrink:0;box-shadow:0 0 10px rgba(200,169,110,.2)">
+                  {{ u.username[0].upper() }}
+                </div>
+                <strong style="font-size:.9rem">{{ u.username }}</strong>
+              </div>
+            </td>
+            <td style="color:var(--text-muted);font-size:.85rem">{{ u.email }}</td>
+            <td>
+              <span class="badge {% if u.tryons > 0 %}badge-gold{% else %}badge-purple{% endif %}">
+                {{ u.tryons }} try-on{{ 's' if u.tryons != 1 else '' }}
+              </span>
+            </td>
+            <td style="color:var(--text-muted);font-size:.82rem">{{ u.created_at[:10] }}</td>
+            <td>
+              <!-- Activity bar -->
+              <div style="display:flex;align-items:center;gap:.5rem">
+                <div style="width:80px;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden">
+                  <div style="height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .8s cubic-bezier(.16,1,.3,1);width:{% if u.tryons == 0 %}0%{% elif u.tryons < 3 %}20%{% elif u.tryons < 6 %}50%{% elif u.tryons < 10 %}75%{% else %}100%{% endif %}"></div>
+                </div>
+                <span style="font-size:.72rem;color:var(--text-muted)">{% if u.tryons == 0 %}New{% elif u.tryons < 5 %}Active{% else %}Power{% endif %}</span>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" style="text-align:center;color:var(--text-muted);padding:3.5rem;font-size:.9rem">
+              <div style="font-size:2rem;margin-bottom:.5rem">👤</div>
+              No users registered yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="noResults" style="display:none;text-align:center;padding:2.5rem;color:var(--text-muted);font-size:.88rem">
+      No users match your search.
+    </div>
+
+    <!-- Row count -->
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.8rem;color:var(--text-muted)">
+      Showing <span id="rowCount">{{ users|length }}</span> of {{ users|length }} users
+    </div>
   </div>
 </div>
+
+<style>
+.user-row { cursor:default; }
+.user-row:hover td { background:rgba(200,169,110,.03); }
+
+/* Animate activity bars on load */
+@keyframes barGrow { from { width:0% !important; } }
+.user-row td:last-child > div > div > div {
+  animation: barGrow .9s cubic-bezier(.16,1,.3,1) both;
+}
+</style>
+
+<script>
+function filterUsers() {
+  const q = document.getElementById('userSearch').value.toLowerCase();
+  const rows = document.querySelectorAll('.user-row');
+  let visible = 0;
+  rows.forEach(r => {
+    const match = r.dataset.name.includes(q) || r.dataset.email.includes(q);
+    r.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  document.getElementById('rowCount').textContent = visible;
+  document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+}
+
+// Stagger row reveal
+document.querySelectorAll('.user-row').forEach((r, i) => {
+  r.style.opacity = '0';
+  r.style.transform = 'translateX(-10px)';
+  r.style.transition = 'opacity .4s, transform .4s';
+  setTimeout(() => { r.style.opacity = '1'; r.style.transform = 'translateX(0)'; }, 80 + i * 50);
+});
+</script>
 {% endblock %}

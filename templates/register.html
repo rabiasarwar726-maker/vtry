@@ -1,32 +1,42 @@
 {% extends 'base.html' %}
 {% block title %}Register — VTRY{% endblock %}
 {% block content %}
-<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(232,196,255,0.05) 0%,transparent 70%)">
-  <div style="width:100%;max-width:440px" class="anim-scale">
-    <div style="text-align:center;margin-bottom:2.5rem">
-      <a href="/" style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--accent);text-decoration:none;display:block;margin-bottom:0.3rem">✦ VTRY</a>
-      <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:0.4rem">Create Account</h2>
-      <p style="color:var(--text-muted);font-size:0.9rem">Start your virtual try-on journey today</p>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(232,196,255,0.06) 0%,transparent 70%)">
+  <!-- Floating particles -->
+  <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+    <div style="position:absolute;top:15%;left:5%;width:60px;height:60px;border:1px solid rgba(232,196,255,0.15);border-radius:50%;animation:floatBob 5s ease-in-out infinite"></div>
+    <div style="position:absolute;bottom:20%;right:8%;width:40px;height:40px;border:1px solid rgba(200,169,110,0.15);border-radius:8px;animation:floatBob 7s ease-in-out infinite;animation-delay:-2s;transform:rotate(20deg)"></div>
+    <div style="position:absolute;top:60%;left:3%;width:25px;height:25px;background:rgba(122,248,202,0.08);border-radius:50%;animation:floatBob 4s ease-in-out infinite;animation-delay:-4s"></div>
+  </div>
+
+  <div style="width:100%;max-width:440px;position:relative;z-index:5" class="anim-scale">
+    <div style="text-align:center;margin-bottom:2rem">
+      <a href="/" style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--accent);text-decoration:none;display:block;margin-bottom:.3rem;text-shadow:0 0 30px rgba(200,169,110,.3)">✦ VTRY</a>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:.3rem">Create Account</h2>
+      <p style="color:var(--text-muted);font-size:.88rem">Start your virtual try-on journey today</p>
     </div>
-    <div class="card card-glow" style="border-color:rgba(232,196,255,0.12)">
+
+    <div class="card-3d" style="background:rgba(10,11,18,.88);border:1px solid rgba(232,196,255,.12);border-radius:24px;padding:2.2rem 1.8rem;backdrop-filter:blur(24px);box-shadow:0 40px 80px rgba(0,0,0,.5);position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:10%;width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(232,196,255,.3),transparent)"></div>
       <form method="POST">
         <div class="form-group">
           <label>Username</label>
-          <input type="text" name="username" placeholder="Choose a username" required>
+          <div style="position:relative"><span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);font-size:.7rem;color:var(--text-muted)">@</span><input type="text" name="username" placeholder="Choose a username" required style="padding-left:2.5rem"></div>
         </div>
         <div class="form-group">
           <label>Email Address</label>
-          <input type="email" name="email" placeholder="your@email.com" required>
+          <div style="position:relative"><span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);font-size:.7rem;color:var(--text-muted)">✉</span><input type="email" name="email" placeholder="your@email.com" required style="padding-left:2.5rem"></div>
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input type="password" name="password" placeholder="Create a strong password" required>
+          <div style="position:relative"><span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);font-size:.65rem;color:var(--text-muted);letter-spacing:-.05em">●●●</span><input type="password" name="password" placeholder="Create a strong password" required style="padding-left:2.5rem"></div>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.85rem;font-size:0.95rem;margin-top:0.5rem">Create Account →</button>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem;font-size:.95rem;margin-top:.5rem;border-radius:14px;background:linear-gradient(135deg,var(--accent2),#c8a9ff,var(--accent));background-size:200% auto;animation:gradMove 3s linear infinite">Create Account →</button>
       </form>
-      <div class="divider"></div>
-      <p style="text-align:center;font-size:0.88rem;color:var(--text-muted)">Already have an account? <a href="/login" style="color:var(--accent);font-weight:600">Sign In</a></p>
+      <div class="divider" style="display:flex;align-items:center;gap:1rem;margin:1.2rem 0;color:var(--text-muted);font-size:.78rem"><div style="flex:1;height:1px;background:var(--border)"></div><span>or</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+      <p style="text-align:center;font-size:.86rem;color:var(--text-muted)">Already have an account? <a href="/login" style="color:var(--accent);font-weight:600;text-decoration:none">Sign In</a></p>
     </div>
   </div>
 </div>
+<style>@keyframes gradMove{from{background-position:0%}to{background-position:200%}}</style>
 {% endblock %}
