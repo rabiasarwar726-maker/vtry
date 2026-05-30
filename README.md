@@ -66,7 +66,7 @@ vtry/
 - **Backend:** Python, Flask, SQLite
 - **Image Processing:** OpenCV, NumPy, Pillow
 - **Frontend:** HTML5, CSS3, JavaScript
-- **Architecture:** Client-Server (MVC pattern)
+- **Architecture:** Client-Server (MVC pattern),fashion.ai Api
 
 ---
 
@@ -95,6 +95,4 @@ vtry/
 ## 🔮 Future Improvements
 - Deep learning body pose estimation (MediaPipe/OpenPose)
 - Real-time webcam try-on
-- Automatic size recommendation
-- Multiple garment types (bottoms, accessories)
 - Mobile app version
